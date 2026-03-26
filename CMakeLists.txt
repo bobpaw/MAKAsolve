@@ -12,7 +12,9 @@ link_libraries(MPI::MPI_CXX)
 
 # Top level installed include directory
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include" TYPE INCLUDE)
+install(DIRECTORY
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/MAKAsolve" TYPE INCLUDE
+)
 
 add_subdirectory(src)
 if(BUILD_TESTING OR ${PROJECT_NAME}_BUILD_TESTING)
