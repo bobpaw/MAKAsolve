@@ -8,6 +8,8 @@ jobs:
   style:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
       - name: clang-format check
         run: >
           find . -type f \( -name '*.cc' -o -name '*.cu' -o -name '*.h' \)
