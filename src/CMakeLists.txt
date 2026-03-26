@@ -3,3 +3,4 @@ set(SOURCES
 )
 
 add_library(MAKAsolve ${SOURCES})
+install(TARGETS MAKAsolve)
