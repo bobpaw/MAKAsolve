@@ -18,5 +18,5 @@ install(DIRECTORY
 
 add_subdirectory(src)
 if(BUILD_TESTING OR ${PROJECT_NAME}_BUILD_TESTING)
-add_subdirectory(test)
+  add_subdirectory(test)
 endif()
