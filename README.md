@@ -27,10 +27,10 @@ cmake --build build
 
 ## Authors
 
-- Aiden Woodruff <woodra@rpi.edu>
 - Mikiel Gica <gicam@rpi.edu>
-- Kiran Koch-Mathews <kochmk@rpi.edu>
 - Aidan Hoover <hoovea@rpi.edu>
+- Kiran Koch-Mathews <kochmk@rpi.edu>
+- Aiden Woodruff <woodra@rpi.edu>
 
 [CMake]: https://cmake.org
 [PUMI]: https://github.com/SCOREC/core
