@@ -1,6 +1,5 @@
 namespace maka {
 
-class Solver {
-};
+class Solver {};
 
 } // namespace maka

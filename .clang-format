@@ -4,6 +4,7 @@ ColumnLimit: 80
 UseTab: Always
 IndentWidth: 2
 TabWidth: 2
+NamespaceIndentation: None
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortFunctionsOnASingleLine: Inline
