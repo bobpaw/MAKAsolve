@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(MAKAsolve VERSION 0.0 LANGUAGES CXX CUDA)
 
+include(CTest)
 include(GNUInstallDirs)
 
 find_package(MPI REQUIRED)

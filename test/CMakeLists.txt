@@ -27,7 +27,9 @@ macro(maka_test TESTNAME EXE NPROCS)
 endmacro(maka_test)
 
 # Add a simple MAKAsolve test case build from a single source file.
-macro(maka_test_single TESTTARGET TESTSOURCE)
+macro(maka_test_single TESTTARGET TESTSOURCE NPROCS)
 	add_maka_test_exe(${TESTTARGET} ${TESTSOURCE})
-	maka_test(${TESTTARGET} "$<TARGET_FILE:${TESTTARGET}>" ${ARGN})
+	maka_test(${TESTTARGET} "$<TARGET_FILE:${TESTTARGET}>" ${NPROCS} ${ARGN})
 endmacro(maka_test_single)
+
+maka_test_single(empty empty.cc 1)
