@@ -10,5 +10,5 @@ jobs:
     steps:
       - name: clang-format check
         run: >
-        find . -type f \( -name '*.cc' -o -name '*.cu' -o -name '*.h' \)
-        -exec clang-format -n --Werror --fail-on-incomplete-format {} +
+          find . -type f \( -name '*.cc' -o -name '*.cu' -o -name '*.h' \)
+          -exec clang-format -n --Werror --fail-on-incomplete-format {} +
