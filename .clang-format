@@ -1,0 +1,15 @@
+---
+Language: Cpp
+ColumnLimit: 80
+UseTab: Always
+IndentWidth: 2
+TabWidth: 2
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLoopsOnASingleLine: true
+AllowShortLambdasOnASingleLine: All
+PointerAlignment: Left
+AlignOperands: Align
+BreakBeforeBinaryOperators: NonAssignment
+...
