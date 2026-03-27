@@ -1,0 +1,127 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{refs.bib}
+
+\title{Parallel Computing Proposal: MAKAsolve}
+\author{
+	Mikiel Gica
+	\and Aidan Hoover
+	\and Kiran Koch-Mathews
+	\and Aiden Woodruff
+}
+\date{March 27, 2026}
+
+\begin{document}
+\maketitle
+
+Computational Fluid Dynamics (CFD) involves solving for flow variables using
+the Navier-Stokes (NS) equations on a domain, typically discretized by a
+mesh. Solving the NS equations using numerical methods such as Finite Element
+or Finite Volume can become computationally expensive and intractable to
+solve on a single processor.  This expensive operation can be parallelized by
+splitting (partitioning) the mesh into parts that one processor can handle.
+Each processor can then solve the NS equations on its own partition.
+
+The NS equations can be written as a system of multiple advection-diffusion
+equations. To emulate the process of solving the NS equations on a
+partitioned mesh, we want to solve a single advection-diffusion equation
+using Finite Element methods. One form of the advection-diffusion equation
+for a conserved variable \(\phi\) is
+
+\begin{equation}
+	\begin{split}
+		\phi_{,t} + a_i\phi_i - \kappa\phi_{,ii} = f & \text{ on } \Omega \\
+		\phi = g & \text{ on } \Gamma_g \label{eq:strong1-ess} \\
+		-\kappa\phi_{,i} = h & \text{ on } \Gamma_h
+	\end{split}
+\end{equation}
+
+where \(a_i\) are the components of an advection vector, \(\kappa > 0\) is a
+diffusion constant, \(f : \Omega \to \mathbb{R}\) is a source term, \(g\) is
+the essential (Dirichlet) boundary condition, \(h\) is the natural (Neumann)
+boundary condition, and \(i\) is a variable from 1 to the number of spatial
+dimensions (Einstein notation is used for all equations). We make the
+following simplifying assumptions: \(\phi_{,t} = 0\) (steady state),
+\(f = 0\) (no source term), and \(h = 0\) (only Dirichlet BCs, i.e.
+\(\Gamma_h = \empty\). The Dirichlet BC is satisfied a priori by selecting a
+function
+\(\phi \in \delta = \left\{\phi | \phi \in H^1, u = g |_\Gamma\right\}\). The
+space \(H^1\) is the set of functions which are continuous and
+square-integrable
+\(\int_\Omega\left(\phi^2 + \phi^2_{,x}\right)d\phi < \infty\) up to the 1st
+derivative (so that the solution does not blow up). Then the simplified
+strong form PDE is
+
+\begin{equation}
+	\begin{split}
+		a_i\phi_i - \kappa\phi_{,ii} = 0 & \text{ on } \Omega \\
+		\phi = g & \text{ on } \Gamma
+	\end{split}
+\end{equation}
+
+To ease calculation of the solution, the method of weighted residuals and
+integration by parts are applied to obtain the weak form that can be solved
+instead:
+
+\begin{equation}
+	\int_\Omega w_{,i}\left(-a_i\phi + \kappa\phi_{,i}\right) d\Omega = 0
+\end{equation}
+
+The weighting function \(w : \Omega \to \mathbb{R}\) is also in the set
+\(H^1\) to ensure that the solution does not blow up. To solve the solution
+in the mesh, the weak form is converted to the Galerkin form
+\cite{hughes-1987}:
+
+\begin{equation}
+	\int_\Omega \bar{w}_{,i}(-a_i\bar{\phi} + \kappa\bar{\phi}_{,i}) d\Omega
+	= 0
+\end{equation}
+
+Then the Galerkin form can be used to form a stiffness matrix which can be
+solved with typical linear algebra solvers. Since both \(phi\) and \(w\) are
+\(H^1\), linear finite elements are used later to discretize the solution
+funciton. However, the Galerkin formulation is known to be unstable in
+advection dominated cases \cite{hughes-2010}. One method, known as Stabilized
+Upwind Petrov Galerkin (SUPG), introduces a stabilization term proportional
+to the strong residual. The resulting weak form residual is given below:
+
+\begin{equation}
+	\begin{split}
+		\int_\Omega
+			\bar{w}_{,i}(-a_i\bar{\phi} + \kappa\bar{\phi}_{,i}) d\Omega
+		+ \sum_{e=1}^{N_e}
+			\int_{\Omega^e} (-a_i\bar{\phi}_{,i})(-\tau R(\bar{\phi})) d\Omega
+		= 0 \\
+		R(\bar{\phi}) = a_i\bar{\phi}_i-\kappa\bar{\phi}_{,ii}
+	\end{split}
+\end{equation}
+
+The left factor of the stabilization term has no diffusive component because
+linear finite element are used, and since we are careful to only integrate
+over element boundaries, the \(\phi_{,ii} = 0\). Selecting the \(\tau\)
+parameter carefully has a significant impact on the accuracy and efficiency
+of the solution. In this work we plan to use the algorithmic version proposed
+by Shakib et al. \cite{shakib-1991}.
+
+To solve the linear system numerically, the integrals in the weak form are
+approximated using Gauss-Legendre quadrature to form a stiffness matrix. By
+using piecewise linear triangular finite element basis functions, the matrix
+entry for each mesh node can be formed from only that node and its neighbors.
+This coupling results in a sparse matrix that can be solved efficiently.
+
+To couple nodes on part boundaries with neighbors on other processors, we
+will share one ring of elements on each boundary, referred to as ``ghost''
+cells. These ghost cells are supported natively by the PUMI library we plan
+to use for meshing. MPI is used to communicate ghost cell data between
+processors. Each processor will then use the GPU to solve the linear system.
+We will demonstrate strong scaling of our parallel algorithm by obtaining a
+solution for a large mesh on an increasing number of compute nodes.
+Then we will demonstrate weak scaling of our algorithm by increasing the
+problem size at the same rate as computate resources.
+
+\printbibliography
+
+\end{document}
