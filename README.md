@@ -17,7 +17,9 @@ Advection-Diffusion solver.
 2. Configure CMake
 3. Build
 
-An example `build.sh` that can be run from the project folder is given below:
+Ensure that PUMI is installed somewhere that is in the `CMAKE_PREFIX_PATH`.
+Assuming PUMI is installed in `/opt/PUMI`, the following example `build.sh`
+can be run from the project folder to configure and build MAKAsolve:
 
 ```sh
 CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/PUMI
