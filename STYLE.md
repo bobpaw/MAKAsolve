@@ -6,8 +6,9 @@ committing. Using a tool allows developers to write as they please and commit
 as recommended.
 
 The included `.editorconfig` file can also help. With Vim 9.0.1799 and above,
-add `packadd!  editorconfig` to your `.vimrc`. See https://editorconfig.org/ for
-more information
+add `packadd!  editorconfig` to your `.vimrc`. For VS Code, there is an official
+plugin available from the marketplace. See https://editorconfig.org/ for more
+information for other editors.
 
 ## Line length
 
