@@ -5,6 +5,10 @@ the system package manager or pip. Then use `git clang-format` before
 committing. Using a tool allows developers to write as they please and commit
 as recommended.
 
+The included `.editorconfig` file can also help. With Vim 9.0.1799 and above,
+add `packadd!  editorconfig` to your `.vimrc`. See https://editorconfig.org/ for
+more information
+
 ## Line length
 
 Line length should be kept to 80 characters at most.
@@ -17,7 +21,7 @@ spaces between function names and parentheses.
 
 ## Short if
 
-# Functions 
+# Functions
 
 ## Function declaration
 
