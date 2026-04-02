@@ -3,4 +3,5 @@ set(SOURCES
 )
 
 add_library(MAKAsolve ${SOURCES})
+target_link_libraries(MAKAsolve PUBLIC SCOREC::core)
 install(TARGETS MAKAsolve)
