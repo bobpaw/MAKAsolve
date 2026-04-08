@@ -6,7 +6,7 @@ set(${PROJECT_NAME}_TEST_LAUNCHER
 # Add a MAKAsolve test target executable.
 macro(add_maka_test_exe EXE)
 	add_executable(${EXE} ${ARGN})
-	target_link_libraries(${EXE} MAKAsolve CUDA::cusparse CUDA::cusolver)
+	target_link_libraries(${EXE} MAKAsolve)
 endmacro(add_maka_test_exe)
 
 # Add a MAKAsolve test case.
@@ -32,4 +32,4 @@ macro(maka_test_single TESTTARGET TESTSOURCE NPROCS)
 	maka_test(${TESTTARGET} "$<TARGET_FILE:${TESTTARGET}>" ${NPROCS} ${ARGN})
 endmacro(maka_test_single)
 
-maka_test_single(empty empty.cc 1)
+maka_test_single(SparseSolverTest SparseSolverTest.cc 1)
