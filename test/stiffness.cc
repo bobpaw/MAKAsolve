@@ -12,6 +12,7 @@
 #include <apfShape.h>
 #include <gmi_mesh.h>
 #include <lionPrint.h>
+#include <ma.h>
 #include <mthQR.h>
 
 void print_exception(const std::exception& e, int level = 0);
@@ -26,14 +27,13 @@ int main(int argc, char* argv[]) {
 	pcu::Init(&argc, &argv);
 	try {
 		pcu::PCU PCU;
-		if (argc < 6) {
-			std::cout << "USAGE: " << argv[0] << " MODEL MESH [OUT.vtk]\n";
+		if (argc < 4) {
+			std::cout << "USAGE: " << argv[0] << " MODEL MESH REFINEMENT [OUT.vtk]\n";
 			throw 1;
 		}
 		char *modelFile = argv[1], *meshFile = argv[2];
-		char* vtkFile = argc > 6 ? argv[6] : NULL;
-		double adv_dir = std::stod(argv[3]), adv_mag = std::stod(argv[4]);
-		double kappa = std::stod(argv[5]);
+		int refinement = std::stoi(argv[3]);
+		char* vtkFile = argc > 4 ? argv[4] : NULL;
 		const apf::Matrix3x3 kappa_eye(kappa, 0, 0, 0, kappa, 0, 0, 0, kappa);
 		apf::Vector3 adv(adv_mag * std::cos(apf::pi / 180 * adv_dir),
 										 adv_mag * std::sin(apf::pi / 180 * adv_dir), 0);
@@ -45,6 +45,8 @@ int main(int argc, char* argv[]) {
 		// Check that this is about the right file (square).
 		assert(mesh->count(0) == 29);
 		assert(mesh->count(2) == 40);
+		// Now do refinement.
+		if (refinement > 0) ma::runUniformRefinement(mesh, refinement);
 		// Set finite element order.
 		constexpr int order = 1;
 		apf::FieldShape* shape = apf::getLagrange(order);
@@ -100,12 +102,12 @@ int main(int argc, char* argv[]) {
 			apf::destroyMeshElement(me);
 		}
 		mesh->end(it);
-		std::cout << "K: " << K << "F: " << F << '\n';
+		if (refinement == 0) std::cout << "K: " << K << "F: " << F << '\n';
 		// Obtain solution.
 		mth::Vector<double> phi_full(num_nodes);
 		bool solved = mth::solveQR(K, F, phi_full);
 		if (!solved) throw std::runtime_error("failed to solve system");
-		std::cout << "phi: " << phi_full << '\n';
+		if (refinement == 0) std::cout << "phi: " << phi_full << '\n';
 		apf::DynamicArray<apf::Node> nodes;
 		apf::getNodes(nbr, nodes);
 		for (int i = 0; i < nodes.size(); ++i) {
@@ -125,8 +127,11 @@ int main(int argc, char* argv[]) {
 			else if (x.y() < 0.5) sum_below += value;
 		}
 		mesh->end(it);
-		if (std::abs(sum_above - sum_below) > 0.1) // Be very tolerant.
+		double diff = std::abs(sum_above - sum_below) / mesh->count(0);
+		std::cout << "above/below diff over verts: " << diff << '\n';
+		if (diff > 0.01) { // Be very tolerant.
 			throw std::runtime_error("failed symmetry test");
+		}
 	} catch (int r) {
 		pcu::Finalize();
 		return r;
