@@ -10,7 +10,7 @@ macro(add_maka_test_exe EXE)
 endmacro(add_maka_test_exe)
 
 # Add a MAKAsolve test case.
-macro(maka_test TESTNAME EXE NPROCS)
+macro(maka_test TESTNAME NPROCS EXE)
 	if(${PROJECT_NAME}_TEST_LAUNCHER)
 		add_test(NAME ${TESTNAME}
 			COMMAND "${${PROJECT_NAME}_TEST_LAUNCHER}"
@@ -29,7 +29,7 @@ endmacro(maka_test)
 # Add a simple MAKAsolve test case build from a single source file.
 macro(maka_test_single TESTTARGET TESTSOURCE NPROCS)
 	add_maka_test_exe(${TESTTARGET} ${TESTSOURCE})
-	maka_test(${TESTTARGET} "$<TARGET_FILE:${TESTTARGET}>" ${NPROCS} ${ARGN})
+	maka_test(${TESTTARGET} ${NPROCS} "$<TARGET_FILE:${TESTTARGET}>" ${ARGN})
 endmacro(maka_test_single)
 
 set(TESTDATA "${CMAKE_CURRENT_SOURCE_DIR}/data")
