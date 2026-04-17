@@ -1,8 +1,8 @@
 #include <MAKAsolve/Input.h>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include <algorithm>
 
 namespace maka {
 
@@ -27,12 +27,9 @@ Input readInput(const std::string& filename) {
 			std::string value;
 			std::transform(value.begin(), value.end(), value.begin(), ::tolower);
 			iss >> value;
-			if (value == "gpu")
-				input.solver = SolverType::GPU;
-			else if (value == "cpu")
-				input.solver = SolverType::CPU;
-			else
-				throw std::runtime_error("Invalid solver: " + value);
+			if (value == "gpu") input.solver = SolverType::GPU;
+			else if (value == "cpu") input.solver = SolverType::CPU;
+			else throw std::runtime_error("Invalid solver: " + value);
 		}
 
 		else if (key == "kappa") {
@@ -51,4 +48,4 @@ Input readInput(const std::string& filename) {
 	return input;
 }
 
-}
+} // namespace maka

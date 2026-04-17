@@ -1,19 +1,16 @@
 #pragma once
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace maka {
 
-enum class SolverType {
-	CPU,
-	GPU
-};
+enum class SolverType { CPU, GPU };
 
 struct DirichletBC {
-  int model_dim;
-  int model_tag;
-  double value;
+	int model_dim;
+	int model_tag;
+	double value;
 };
 
 class Input {
@@ -21,14 +18,14 @@ public:
 	SolverType solver;
 
 	// physics
-  double kappa;
-  double adv_dir;
-  double adv_mag;
+	double kappa;
+	double adv_dir;
+	double adv_mag;
 
 	// boundary conditions
-  std::vector<DirichletBC> dirichletBCs;
+	std::vector<DirichletBC> dirichletBCs;
 };
 
 Input readInput(const std::string& filename);
 
-}
+} // namespace maka
