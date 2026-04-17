@@ -11,8 +11,8 @@ public:
 	virtual ~CPULinearSolver();
 };
 
-void CPULinearSolver::solve(const mth::Matrix<double>& A, const
-		mth::Vector<double>& b,
+void CPULinearSolver::solve(const mth::Matrix<double>& A,
+														const mth::Vector<double>& b,
 														mth::Vector<double>& x) {
 	x.resize(A.cols());
 	bool solved = mth::solveQR(A, b, x);
