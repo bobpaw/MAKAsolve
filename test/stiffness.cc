@@ -13,7 +13,8 @@
 #include <gmi_mesh.h>
 #include <lionPrint.h>
 #include <ma.h>
-#include <mthQR.h>
+
+#include <MAKAsolve/LinearSolver.h>
 
 void print_exception(const std::exception& e, int level = 0);
 void addDirichletBCs(apf::Numbering* nbr, int model_dim, int model_tag,
@@ -105,8 +106,8 @@ int main(int argc, char* argv[]) {
 		if (refinement == 0) std::cout << "K: " << K << "F: " << F << '\n';
 		// Obtain solution.
 		mth::Vector<double> phi_full(num_nodes);
-		bool solved = mth::solveQR(K, F, phi_full);
-		if (!solved) throw std::runtime_error("failed to solve system");
+		auto CPUsolver = maka::makeCPULinearSolver();
+		CPUsolver->solve(K, F, phi_full);
 		if (refinement == 0) std::cout << "phi: " << phi_full << '\n';
 		apf::DynamicArray<apf::Node> nodes;
 		apf::getNodes(nbr, nodes);
