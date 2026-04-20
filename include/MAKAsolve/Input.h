@@ -1,8 +1,8 @@
 #ifndef MAKASOLVE_INPUT_H
 #define MAKASOLVE_INPUT_H
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace maka {
 

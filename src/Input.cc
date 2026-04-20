@@ -1,9 +1,9 @@
 #include <MAKAsolve/Input.h>
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include <cctype>
 
 namespace maka {
 
@@ -26,7 +26,8 @@ InputPtr readInput(const std::string& filename) {
 
 		if (key == "solver") {
 			std::string value;
-			std::transform(value.begin(), value.end(), value.begin(),[](unsigned char c){ return std::tolower(c); });
+			std::transform(value.begin(), value.end(), value.begin(),
+										 [](unsigned char c) { return std::tolower(c); });
 			iss >> value;
 			if (value == "gpu") input->backend_solver = SolverType::GPU;
 			else if (value == "cpu") input->backend_solver = SolverType::CPU;
