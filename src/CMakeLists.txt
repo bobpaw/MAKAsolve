@@ -1,5 +1,6 @@
 set(SOURCES
 	MAKAsolve.cc
+	Input.cc
 )
 
 add_library(MAKAsolve ${SOURCES})
