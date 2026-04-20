@@ -18,7 +18,7 @@
 namespace maka {
 
 // extract mesh from phi, create node numbering, build BC map
-Solver::Solver(apf::Field* phi, const Input& input) : _phi(phi), input_(input) {
+Solver::Solver(apf::Field* phi, const Input& input) : phi_(phi), input_(input) {
 	mesh_ = apf::getMesh(phi);
 
 	constexpr int order = 1;
@@ -71,7 +71,7 @@ void Solver::assemble(LinearSystem& sys) {
 		// apf::Mesh::Type type = mesh_->getType(e);
 		//  Get map from local node number to global number.
 		apf::NewArray<int> ien;
-		int nen = apf::getElementNumbers(_nbr, e, ien);
+		int nen = apf::getElementNumbers(nbr_, e, ien);
 		apf::MeshElement* me = apf::createMeshElement(mesh_, e);
 		apf::Element* el = apf::createElement(phi_, me);
 		// Integration order is not equal to shape function order in all cases.
