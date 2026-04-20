@@ -3,11 +3,12 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <cctype>
 
 namespace maka {
 
-Input readInput(const std::string& filename) {
-	Input input;
+InputPtr readInput(const std::string& filename) {
+	auto input = std::make_unique<Input>();
 
 	std::ifstream file(filename);
 	if (!file) {
@@ -25,23 +26,23 @@ Input readInput(const std::string& filename) {
 
 		if (key == "solver") {
 			std::string value;
-			std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+			std::transform(value.begin(), value.end(), value.begin(),[](unsigned char c){ return std::tolower(c); });
 			iss >> value;
-			if (value == "gpu") input.solver = SolverType::GPU;
-			else if (value == "cpu") input.solver = SolverType::CPU;
+			if (value == "gpu") input->backend_solver = SolverType::GPU;
+			else if (value == "cpu") input->backend_solver = SolverType::CPU;
 			else throw std::runtime_error("Invalid solver: " + value);
 		}
 
 		else if (key == "kappa") {
-			iss >> input.kappa;
+			iss >> input->kappa;
 		} else if (key == "adv_dir") {
-			iss >> input.adv_dir;
+			iss >> input->adv_dir;
 		} else if (key == "adv_mag") {
-			iss >> input.adv_mag;
+			iss >> input->adv_mag;
 		} else if (key == "dirichlet") {
 			DirichletBC bc;
 			iss >> bc.model_dim >> bc.model_tag >> bc.value;
-			input.dirichletBCs.push_back(bc);
+			input->dirichletBCs.push_back(bc);
 		}
 	}
 

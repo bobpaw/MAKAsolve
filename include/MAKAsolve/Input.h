@@ -1,21 +1,21 @@
-#pragma once
-#include <map>
+#ifndef MAKASOLVE_INPUT_H
+#define MAKASOLVE_INPUT_H
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace maka {
 
 enum class SolverType { CPU, GPU };
 
 struct DirichletBC {
-	int model_dim;
-	int model_tag;
+	int model_dim, model_tag;
 	double value;
 };
 
 class Input {
 public:
-	SolverType solver;
+	SolverType backend_solver;
 
 	// physics
 	double kappa;
@@ -26,6 +26,10 @@ public:
 	std::vector<DirichletBC> dirichletBCs;
 };
 
-Input readInput(const std::string& filename);
+using InputPtr = std::unique_ptr<Input>;
+
+InputPtr readInput(const std::string& filename);
 
 } // namespace maka
+
+#endif // MAKASOLVE_INPUT_H
