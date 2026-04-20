@@ -1,21 +1,21 @@
 #pragma once
 
 #include <MAKAsolve/Input.h>
-#include <apfMesh.h>
 #include <apfField.h>
+#include <apfMesh.h>
 #include <apfNumbering.h>
-#include <vector>
 #include <map>
 #include <utility>
+#include <vector>
 
 namespace maka {
 
 struct LinearSystem {
 	// number of rows
-  int n;
+	int n;
 	// COO sparse matrix storage
-  std::vector<int> row, col;
-  std::vector<double> val, rhs;
+	std::vector<int> row, col;
+	std::vector<double> val, rhs;
 };
 
 class Solver {

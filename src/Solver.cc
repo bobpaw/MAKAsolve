@@ -1,5 +1,5 @@
 #include <MAKAsolve/Solver.h>
-//#include <MAKAsolve/SparseSolver.h>
+// #include <MAKAsolve/SparseSolver.h>
 #include <cmath>
 #include <string>
 
@@ -12,11 +12,10 @@
 #include <gmi_mesh.h>
 #include <lionPrint.h>
 #include <ma.h>
-#include <mthQR.h>
 #include <map>
+#include <mthQR.h>
 
-
-namespace maka{
+namespace maka {
 
 // extract mesh from phi, create node numbering, build BC map
 Solver::Solver(apf::Field* phi, const Input& input) : _phi(phi), input_(input) {
@@ -35,7 +34,6 @@ Solver::~Solver() {
 	apf::destroyNumbering(nbr_);
 }
 
-
 // convert BCs into algebraic constraints
 void Solver::buildBCMap() {
 	for (auto& bc : input_.dirichletBCs) {
@@ -52,14 +50,13 @@ void Solver::buildBCMap() {
 	}
 }
 
-
 // assemble FEM system in sparse COO format
 void Solver::assemble(LinearSystem& sys) {
 	sys.n = numNodes_;
 	sys.rhs.assign(numNodes_, 0.0);
 
 	// temp sparse accumulator
-	std::map<std::pair<int,int>, double> Kmap;
+	std::map<std::pair<int, int>, double> Kmap;
 	const int dim = mesh_->getDimension();
 
 	double kappa = input_.kappa;
@@ -71,8 +68,8 @@ void Solver::assemble(LinearSystem& sys) {
 
 	apf::MeshIterator* it = mesh_->begin(dim);
 	for (apf::MeshEntity* e; (e = mesh_->iterate(it));) {
-		//apf::Mesh::Type type = mesh_->getType(e);
-		// Get map from local node number to global number.
+		// apf::Mesh::Type type = mesh_->getType(e);
+		//  Get map from local node number to global number.
 		apf::NewArray<int> ien;
 		int nen = apf::getElementNumbers(_nbr, e, ien);
 		apf::MeshElement* me = apf::createMeshElement(mesh_, e);
@@ -91,10 +88,10 @@ void Solver::assemble(LinearSystem& sys) {
 			apf::getShapeGrads(el, xi, shp_grad);
 			for (int a = 0; a < nen; ++a) {
 				if (dirichletMap_.count(ien[a])) {
-					//F(ien[a]) = dirichletMap_[ien[a]];
+					// F(ien[a]) = dirichletMap_[ien[a]];
 					sys.rhs[ien[a]] = dirichletMap_[ien[a]];
-					//K(ien[a], ien[a]) = 1.;
-					Kmap[{ien[a],ien[a]}] = 1.0;
+					// K(ien[a], ien[a]) = 1.;
+					Kmap[{ien[a], ien[a]}] = 1.0;
 				} else {
 					for (int b = 0; b < nen; ++b) {
 						/*K(ien[a], ien[b]) +=
@@ -112,7 +109,7 @@ void Solver::assemble(LinearSystem& sys) {
 	}
 	mesh_->end(it);
 
-	//convert map to COO arrays
+	// convert map to COO arrays
 	for (auto& entry : Kmap) {
 		sys.row.push_back(entry.first.first);
 		sys.col.push_back(entry.first.second);
@@ -140,7 +137,7 @@ void Solver::solve(LinearSystem& sys) {
 		for (int i = 0; i < sys.n; i++) {
 			F(i) = sys.rhs[i];
 			for (int j = 0; i < sys.n; j++) {
-				K(i,j) = 0.0;
+				K(i, j) = 0.0;
 			}
 		}
 		// convert sparse to dense for cpu path
@@ -166,7 +163,6 @@ void Solver::solve(LinearSystem& sys) {
 	}
 }
 
-
 // assemble and solve
 void Solver::solve() {
 	LinearSystem sys;
@@ -174,4 +170,4 @@ void Solver::solve() {
 	solve(sys);
 }
 
-}
+} // namespace maka
