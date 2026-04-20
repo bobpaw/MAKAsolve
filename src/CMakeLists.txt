@@ -1,5 +1,5 @@
 set(SOURCES
-	MAKAsolve.cc
+	Solver.cc
 	Input.cc
 )
 
