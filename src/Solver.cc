@@ -136,7 +136,7 @@ void Solver::solve(LinearSystem& sys) {
 		// initialize
 		for (int i = 0; i < sys.n; i++) {
 			F(i) = sys.rhs[i];
-			for (int j = 0; i < sys.n; j++) {
+			for (int j = 0; j < sys.n; j++) {
 				K(i, j) = 0.0;
 			}
 		}
