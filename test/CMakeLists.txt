@@ -38,6 +38,9 @@ maka_test_single(empty empty.cc 1)
 maka_test_single(load-mesh load-mesh.cc 1
   "${TESTDATA}/square.dmg" "${TESTDATA}/square.smb"
 )
+maka_test_single(read-input read-input.cc 1
+  "${TESTDATA}/square-stable.rc"
+)
 add_maka_test_exe(stiffness stiffness.cc)
 maka_test(stiffness0 1
 	./stiffness "${TESTDATA}/square.dmg" "${TESTDATA}/square.smb" 0
