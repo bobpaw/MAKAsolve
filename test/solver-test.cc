@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 
 		// read input + run solver
 		auto input = maka::readInput(argv[4]);
-		maka::Solver solver (phi, *input);
+		maka::Solver solver(phi, *input);
 		solver.solve();
 
 		// Optionally plot.
