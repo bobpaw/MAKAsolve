@@ -1,6 +1,8 @@
 set(SOURCES
 	Solver.cc
 	Input.cc
+	LinearSolver.cc
+	CPULinearSolver.cc
 )
 
 add_library(MAKAsolve ${SOURCES})
