@@ -48,8 +48,7 @@ int main(int argc, char* argv[]) {
 		if (refinement > 0) ma::runUniformRefinement(mesh, refinement);
 		// Set finite element order.
 		constexpr int order = 1;
-		apf::FieldShape* shape = apf::getLagrange(order);
-		apf::Field* phi = apf::createField(mesh, "phi", apf::SCALAR, shape);
+		apf::Field* phi = apf::createLagrangeField(mesh, "phi", apf::SCALAR, order);
 		apf::zeroField(phi);
 
 		// read input + run solver

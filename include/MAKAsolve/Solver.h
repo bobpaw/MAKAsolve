@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MAKASOLVE_SOLVER_H
+#define MAKASOLVE_SOLVER_H
 
 #include <MAKAsolve/Input.h>
 #include <apfField.h>
@@ -43,5 +44,6 @@ private:
 	// convert BCs into algebraic constraints
 	void buildBCMap();
 };
-
 } // namespace maka
+
+#endif // MAKASOLVE_SOLVER_H

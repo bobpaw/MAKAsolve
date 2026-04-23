@@ -68,7 +68,6 @@ void Solver::assemble(LinearSystem& sys) {
 
 	apf::MeshIterator* it = mesh_->begin(dim);
 	for (apf::MeshEntity* e; (e = mesh_->iterate(it));) {
-		// apf::Mesh::Type type = mesh_->getType(e);
 		//  Get map from local node number to global number.
 		apf::NewArray<int> ien;
 		int nen = apf::getElementNumbers(nbr_, e, ien);
@@ -88,15 +87,10 @@ void Solver::assemble(LinearSystem& sys) {
 			apf::getShapeGrads(el, xi, shp_grad);
 			for (int a = 0; a < nen; ++a) {
 				if (dirichletMap_.count(ien[a])) {
-					// F(ien[a]) = dirichletMap_[ien[a]];
 					sys.rhs[ien[a]] = dirichletMap_[ien[a]];
-					// K(ien[a], ien[a]) = 1.;
 					Kmap[{ien[a], ien[a]}] = 1.0;
 				} else {
 					for (int b = 0; b < nen; ++b) {
-						/*K(ien[a], ien[b]) +=
-							-(shp_grad[a] * adv) * shp[b] * wdv
-							+ (shp_grad[a] * (kappa_eye * shp_grad[b])) * wdv;*/
 						Kmap[{ien[a], ien[b]}] +=
 							-(shp_grad[a] * adv) * shp[b] * wdv
 							+ (shp_grad[a] * (kappa_eye * shp_grad[b])) * wdv;
