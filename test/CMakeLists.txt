@@ -34,7 +34,6 @@ endmacro(maka_test_single)
 
 set(TESTDATA "${CMAKE_CURRENT_SOURCE_DIR}/data")
 
-maka_test_single(empty empty.cc 1)
 maka_test_single(load-mesh load-mesh.cc 1
   "${TESTDATA}/square.dmg" "${TESTDATA}/square.smb"
 )
@@ -52,4 +51,11 @@ maka_test(stiffness1 1
 
 maka_test(stiffness2 1
 	./stiffness "${TESTDATA}/square.dmg" "${TESTDATA}/square.smb" 2
+)
+
+maka_test_single(solver-test solver-test.cc 1
+  "${TESTDATA}/square.dmg"
+  "${TESTDATA}/square.smb"
+  0
+  "${TESTDATA}/solve-data.rc"
 )
