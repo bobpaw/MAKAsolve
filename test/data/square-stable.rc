@@ -1,0 +1,14 @@
+# physics
+kappa 0.5
+adv_dir 0
+adv_mag 1
+
+# boundary conditions
+dirichlet 1 6 1.0
+dirichlet 1 2 0.0
+dirichlet 1 4 0.0
+dirichlet 1 8 0.0
+
+
+# solver settings
+solver gpu

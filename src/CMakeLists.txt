@@ -1,12 +1,8 @@
 set(SOURCES
-	MAKAsolve.cc
-	SparseSolver.cu
+	Solver.cc
+	Input.cc
 )
 
 add_library(MAKAsolve ${SOURCES})
-set_target_properties(MAKAsolve PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-target_link_libraries(MAKAsolve
-  CUDA::cusparse
-  CUDA::cusolver
-)
+target_link_libraries(MAKAsolve PUBLIC SCOREC::core)
 install(TARGETS MAKAsolve)

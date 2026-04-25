@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 3.12)
-project(MAKAsolve VERSION 0.0 LANGUAGES CXX CUDA)
+project(MAKAsolve VERSION 0.0 LANGUAGES CXX)
 
 include(CTest)
 include(GNUInstallDirs)
+include(CheckLanguage)
 
+check_language(CUDA)
+if(CMAKE_CUDA_COMPILER)
+	enable_language(CUDA)
+	find_package(CUDAToolkit REQUIRED)
+endif()
 find_package(MPI REQUIRED)
-find_package(CUDAToolkit REQUIRED)
 find_package(SCOREC 4 REQUIRED)
 
 # Link everything with MPI

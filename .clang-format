@@ -3,6 +3,7 @@ Language: Cpp
 ColumnLimit: 80
 UseTab: Always
 IndentWidth: 2
+ContinuationIndentWidth: 2
 TabWidth: 2
 NamespaceIndentation: None
 AllowShortCaseLabelsOnASingleLine: true
