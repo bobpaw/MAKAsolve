@@ -86,6 +86,27 @@ void Solver::assemble(LinearSystem& sys) {
 			apf::NewArray<apf::Vector3> shp_grad;
 			apf::getShapeValues(el, xi, shp);
 			apf::getShapeGrads(el, xi, shp_grad);
+
+			double tau = 0;
+			if (stab_method == StabilizerMethod::SUPG_Shakib_Isotropic) {
+				apf::Matrix3x3 jac_inv;
+				apf::getJacobianInv(me, xi, jac_inv);
+				apf::Matrix3x3 jac_inv_T = apf::transpose(jac_inv);
+				
+				apf::Matrix3x3 gij;
+				double gij_fnorm_2 = 0;
+				for (int i = 0; i < dim; ++i) {
+					for (int j = 0; j < dim; ++j) {
+						gij[i][j] = jac_inv_T[i] * jac_inv_T[j];
+						gij_fnorm_2 += gij[i][j] * gij[i][j];
+					}
+				}
+				double tau_A = adv * (gij * adv);
+				double tau_B = 9.0 * gij_fnorm_2 * (kappa * kappa);
+				tau = std::pow(tau_A + tau_B, -0.5);
+				printf("%.13f\n", tau);
+			}
+
 			for (int a = 0; a < nen; ++a) {
 				if (dirichletMap_.count(ien[a])) {
 					sys.rhs[ien[a]] = dirichletMap_[ien[a]];
@@ -93,20 +114,7 @@ void Solver::assemble(LinearSystem& sys) {
 				} else {
 					for (int b = 0; b < nen; ++b) {
 						double stab_term = 0;
-						if (stab_method == StabilizerMethod::SUPG_Shakib_Isotropic) {
-							// take one edge length as h
-							apf::Vector3 v1, v2;
-							apf::MeshEntity* vertices[4];
-							mesh_->getDownward(e, 0, vertices);
-							double h = 99999;
-							for (int i = 0; i < 3; i++) {
-								mesh_->getPoint(vertices[i], 0, v1);
-								mesh_->getPoint(vertices[(i+1)%3], 0, v2);
-								h = std::min((v2 - v1).getLength(), h);
-							}
-							double tau = 1.0 / std::sqrt(std::pow(2*adv.getLength()/h, 2)+9*std::pow((4*kappa/(h*h)),2));
-							//printf("h: %.13f tau: %.13f \n", h, tau);
-
+						if (stab_method != StabilizerMethod::None) {
 							stab_term = -1 * (adv * shp_grad[a]) * -tau * (shp_grad[b] * adv) * wdv;
 						}
 

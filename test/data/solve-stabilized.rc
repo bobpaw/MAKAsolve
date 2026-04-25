@@ -1,7 +1,7 @@
 # physics
 kappa 0.1
 adv_dir 0
-adv_mag 100s
+adv_mag 10
 
 # boundary conditions
 dirichlet 1 6 1.0
