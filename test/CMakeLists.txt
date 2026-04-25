@@ -59,3 +59,16 @@ maka_test_single(solver-test solver-test.cc 1
   0
   "${TESTDATA}/solve-data.rc"
 )
+
+add_maka_test_exe(speed-test speed-test.cc)
+maka_test(speed-test 1
+./speed-test
+"${TESTDATA}/square.dmg"
+"${TESTDATA}/square.smb"
+"${TESTDATA}/square-stable.rc"
+2
+)
+
+if(CMAKE_CUDA_COMPILER)
+  maka_test_single(sparse-solver-test sparse-solver-test.cc 1)
+endif()

@@ -1,5 +1,5 @@
 #include <MAKAsolve/Solver.h>
-// #include <MAKAsolve/SparseSolver.h>
+#include <MAKAsolve/SparseSolver.h>
 #include <cmath>
 #include <string>
 
@@ -117,8 +117,9 @@ void Solver::solve(LinearSystem& sys) {
 
 #ifdef USE_CUDA
 	// gpu path
-	if (input_.solver == SolverType::GPU) {
-		SparseSolver solver(sys.n, sys.val.size(), sys.row.data(), sys.val.data());
+	if (input_.backend_solver == SolverType::GPU) {
+		SparseSolver solver(sys.n, (int)sys.val.size(), sys.row.data(),
+												sys.col.data(), sys.val.data());
 		solver.solve(sys.rhs.data(), solution.data());
 	} else
 #endif
