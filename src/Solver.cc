@@ -62,6 +62,7 @@ void Solver::assemble(LinearSystem& sys) {
 	double kappa = input_.kappa;
 	double adv_dir = input_.adv_dir;
 	double adv_mag = input_.adv_mag;
+	StabilizerMethod stab_method = input_.stabilizer_method;
 	const apf::Matrix3x3 kappa_eye(kappa, 0, 0, 0, kappa, 0, 0, 0, kappa);
 	apf::Vector3 adv(adv_mag * std::cos(apf::pi / 180 * adv_dir),
 									 adv_mag * std::sin(apf::pi / 180 * adv_dir), 0);
@@ -91,9 +92,28 @@ void Solver::assemble(LinearSystem& sys) {
 					Kmap[{ien[a], ien[a]}] = 1.0;
 				} else {
 					for (int b = 0; b < nen; ++b) {
+						double stab_term = 0;
+						if (stab_method == StabilizerMethod::SUPG_Shakib_Isotropic) {
+							// take one edge length as h
+							apf::Vector3 v1, v2;
+							apf::MeshEntity* vertices[4];
+							mesh_->getDownward(e, 0, vertices);
+							double h = 99999;
+							for (int i = 0; i < 3; i++) {
+								mesh_->getPoint(vertices[i], 0, v1);
+								mesh_->getPoint(vertices[(i+1)%3], 0, v2);
+								h = std::min((v2 - v1).getLength(), h);
+							}
+							double tau = 1.0 / std::sqrt(std::pow(2*adv.getLength()/h, 2)+9*std::pow((4*kappa/(h*h)),2));
+							//printf("h: %.13f tau: %.13f \n", h, tau);
+
+							stab_term = -1 * (adv * shp_grad[a]) * -tau * (shp_grad[b] * adv) * wdv;
+						}
+
 						Kmap[{ien[a], ien[b]}] +=
 							-(shp_grad[a] * adv) * shp[b] * wdv
-							+ (shp_grad[a] * (kappa_eye * shp_grad[b])) * wdv;
+							+ (shp_grad[a] * (kappa_eye * shp_grad[b])) * wdv
+							+ stab_term;
 					}
 				}
 			}

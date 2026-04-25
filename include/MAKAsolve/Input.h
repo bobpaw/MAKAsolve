@@ -8,6 +8,8 @@ namespace maka {
 
 enum class SolverType { CPU, GPU };
 
+enum class StabilizerMethod { None, SUPG_Shakib_Isotropic };
+
 struct DirichletBC {
 	int model_dim, model_tag;
 	double value;
@@ -16,6 +18,7 @@ struct DirichletBC {
 class Input {
 public:
 	SolverType backend_solver;
+	StabilizerMethod stabilizer_method;
 
 	// physics
 	double kappa;

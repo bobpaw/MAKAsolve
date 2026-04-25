@@ -1,0 +1,11 @@
+# physics
+kappa 0.1
+adv_dir 0
+adv_mag 100s
+
+# boundary conditions
+dirichlet 1 6 1.0
+
+# solver settings
+solver cpu
+stabilization supg_shakib_isotropic

@@ -44,6 +44,17 @@ InputPtr readInput(const std::string& filename) {
 			DirichletBC bc;
 			iss >> bc.model_dim >> bc.model_tag >> bc.value;
 			input->dirichletBCs.push_back(bc);
+		} else if (key == "stabilization") {
+			std::string value;
+			iss >> value;
+			if (value == "supg_shakib_isotropic") {
+				input->stabilizer_method = StabilizerMethod::SUPG_Shakib_Isotropic;
+			} else if (value == "none") {
+				input->stabilizer_method = StabilizerMethod::None;
+			} else {
+				throw std::runtime_error("Invalid stabilization method: " + value +
+					"\nEnter 'none' to disable stabilization.");
+			}
 		}
 	}
 
