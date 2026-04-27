@@ -59,3 +59,5 @@ maka_test_single(solver-test solver-test.cc 1
   0
   "${TESTDATA}/solve-data.rc"
 )
+
+add_maka_test_exe(partition-test partition-test.cc)
