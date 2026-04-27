@@ -18,6 +18,8 @@
 #include <ma.h>
 #include <mthQR.h>
 
+#include "test_utils.h"
+
 void print_exception(const std::exception& e, int level = 0);
 
 int main(int argc, char* argv[]) {
@@ -26,7 +28,8 @@ int main(int argc, char* argv[]) {
 	try {
 		pcu::PCU PCU;
 		if (argc < 5) {
-			std::cout << "USAGE: " << argv[0] << " MODEL MESH REFINEMENT [OUT.vtk]\n";
+			std::cout << "USAGE: " << argv[0]
+								<< " MODEL MESH REFINEMENT INPUT.rc [OUT.vtk]\n";
 			throw 1;
 		}
 		char *modelFile = argv[1], *meshFile = argv[2];
@@ -37,13 +40,9 @@ int main(int argc, char* argv[]) {
 		// Initialize geometry library
 		gmi_register_mesh();
 		// Load mesh
-		apf::Mesh2* mesh = apf::loadMdsMesh(modelFile, meshFile, &PCU);
+		apf::Mesh2* mesh =
+			loadAndPartitionSerialMesh(modelFile, meshFile, PCU, 29, 40);
 		const int dim = mesh->getDimension();
-
-		// Check that this is about the right file (square).
-		assert(mesh->count(0) == 29);
-		assert(mesh->count(2) == 40);
-
 		// Now do refinement.
 		if (refinement > 0) ma::runUniformRefinement(mesh, refinement);
 		// Set finite element order.

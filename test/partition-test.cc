@@ -10,16 +10,7 @@
 #include <ma.h>
 #include <parma.h>
 
-// from SCOREC core test/split.cc
-apf::Migration* getPlan(apf::Mesh* m, int parts) {
-	apf::Splitter* splitter = Parma_MakeRibSplitter(m);
-	apf::MeshTag* weights = Parma_WeighByMemory(m);
-	apf::Migration* plan = splitter->split(weights, 1.10, parts);
-	apf::removeTagFromDimension(m, weights, m->getDimension());
-	m->destroyTag(weights);
-	delete splitter;
-	return plan;
-}
+#include "test_utils.h"
 
 int main(int argc, char* argv[]) {
 	pcu::Init(&argc, &argv);
@@ -34,21 +25,9 @@ int main(int argc, char* argv[]) {
 		char* vtkFile = argc > 4 ? argv[4] : NULL;
 		// Initialize geometry library
 		gmi_register_mesh();
-		// Load geometry model
-		gmi_model* geom = gmi_load(modelFile);
-		// Load unpartitioned mesh on processor 0
-		apf::Mesh2* mesh = 0;
-		apf::Migration* plan = 0;
-		auto selfPCU = PCU.Split(PCU.Self(), PCU.Self());
-		if (PCU.Self() == 0) {
-			mesh = apf::loadMdsMesh(geom, meshFile, selfPCU.get());
-			// Check that this is about the right file (square).
-			assert(mesh->count(0) == 29);
-			assert(mesh->count(2) == 40);
-			plan = getPlan(mesh, PCU.Peers());
-		}
-		if (mesh != nullptr) mesh->switchPCU(&PCU);
-		mesh = apf::repeatMdsMesh(mesh, geom, plan, PCU.Peers(), &PCU);
+		// Load mesh
+		apf::Mesh2* mesh =
+			loadAndPartitionSerialMesh(modelFile, meshFile, PCU, 29, 40);
 		assert(mesh && "mesh part does not exist on processor");
 
 		if (refinement > 0) ma::runUniformRefinement(mesh, refinement);
