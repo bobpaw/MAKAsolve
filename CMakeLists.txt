@@ -12,6 +12,11 @@ if(CMAKE_CUDA_COMPILER)
 endif()
 find_package(MPI REQUIRED)
 find_package(SCOREC 4 REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+option(USE_AMGX "USE_AMGX off" OFF)
+if(USE_AMGX)
+  find_package(AmgX REQUIRED)
+endif()
 
 # Link everything with MPI
 link_libraries(MPI::MPI_CXX)

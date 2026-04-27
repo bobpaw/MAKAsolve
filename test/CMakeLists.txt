@@ -72,3 +72,14 @@ maka_test(speed-test 1
 if(CMAKE_CUDA_COMPILER)
   maka_test_single(sparse-solver-test sparse-solver-test.cc 1)
 endif()
+
+if(USE_AMGX)
+  add_maka_test_exe(parallel-test parallel-test.cc)
+  maka_test(parallel-test 1
+    ./parallel-test
+    "${TESTDATA}/square.dmg"
+    "${TESTDATA}/square.smb"
+    "${TESTDATA}/square-stable.rc"
+    1 1 2
+  )
+endif()

@@ -1,5 +1,8 @@
 #include <MAKAsolve/Solver.h>
 #include <MAKAsolve/SparseSolver.h>
+#ifdef USE_AMGX
+#include <MAKAsolve/ParallelSolver.h>
+#endif
 #include <cmath>
 #include <string>
 
@@ -115,39 +118,46 @@ void Solver::assemble(LinearSystem& sys) {
 void Solver::solve(LinearSystem& sys) {
 	std::vector<double> solution(sys.n);
 
-#ifdef USE_CUDA
-	// gpu path
-	if (input_.backend_solver == SolverType::GPU) {
-		SparseSolver solver(sys.n, (int)sys.val.size(), sys.row.data(),
-												sys.col.data(), sys.val.data());
+#ifdef USE_AMGX
+	if (input_.backend_solver == SolverType::AMGX) {
+		ParallelSolver solver(sys.n, (int)sys.val.size(), sys.row.data(),
+													sys.col.data(), sys.val.data(), input_.numDevices);
 		solver.solve(sys.rhs.data(), solution.data());
 	} else
 #endif
-	{
-		// cpu - dense
-		mth::Matrix<double> K(sys.n, sys.n);
-		mth::Vector<double> F(sys.n);
+#ifdef USE_CUDA
+		// gpu path
+		if (input_.backend_solver == SolverType::GPU) {
+			SparseSolver solver(sys.n, (int)sys.val.size(), sys.row.data(),
+													sys.col.data(), sys.val.data());
+			solver.solve(sys.rhs.data(), solution.data());
+		} else
+#endif
+		{
+			// cpu - dense
+			mth::Matrix<double> K(sys.n, sys.n);
+			mth::Vector<double> F(sys.n);
 
-		// initialize
-		for (int i = 0; i < sys.n; i++) {
-			F(i) = sys.rhs[i];
-			for (int j = 0; j < sys.n; j++) {
-				K(i, j) = 0.0;
+			// initialize
+			for (int i = 0; i < sys.n; i++) {
+				F(i) = sys.rhs[i];
+				for (int j = 0; j < sys.n; j++) {
+					K(i, j) = 0.0;
+				}
+			}
+			// convert sparse to dense for cpu path
+			for (size_t i = 0; i < sys.val.size(); i++) {
+				K(sys.row[i], sys.col[i]) += sys.val[i];
+			}
+			mth::Vector<double> phi_full(sys.n);
+			bool solved = mth::solveQR(K, F, phi_full);
+			if (!solved) {
+				throw std::runtime_error("CPU solver failed");
+			}
+			for (int i = 0; i < sys.n; i++) {
+				solution[i] = phi_full(i);
 			}
 		}
-		// convert sparse to dense for cpu path
-		for (size_t i = 0; i < sys.val.size(); i++) {
-			K(sys.row[i], sys.col[i]) += sys.val[i];
-		}
-		mth::Vector<double> phi_full(sys.n);
-		bool solved = mth::solveQR(K, F, phi_full);
-		if (!solved) {
-			throw std::runtime_error("CPU solver failed");
-		}
-		for (int i = 0; i < sys.n; i++) {
-			solution[i] = phi_full(i);
-		}
-	}
 
 	// write solution back to field
 	apf::DynamicArray<apf::Node> nodes;

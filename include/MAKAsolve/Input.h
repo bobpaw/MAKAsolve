@@ -6,7 +6,7 @@
 
 namespace maka {
 
-enum class SolverType { CPU, GPU };
+enum class SolverType { CPU, GPU, AMGX };
 
 struct DirichletBC {
 	int model_dim, model_tag;
@@ -16,6 +16,7 @@ struct DirichletBC {
 class Input {
 public:
 	SolverType backend_solver;
+	int numDevices = 1;
 
 	// physics
 	double kappa;
