@@ -45,6 +45,8 @@ InputPtr readInput(const std::string& filename) {
 			DirichletBC bc;
 			iss >> bc.model_dim >> bc.model_tag >> bc.value;
 			input->dirichletBCs.push_back(bc);
+		} else if (key == "node_gpus") {
+			iss >> input->node_gpus;
 		}
 	}
 

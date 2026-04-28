@@ -16,6 +16,7 @@ struct DirichletBC {
 class Input {
 public:
 	SolverType backend_solver;
+	int node_gpus = 1;
 
 	// physics
 	double kappa;

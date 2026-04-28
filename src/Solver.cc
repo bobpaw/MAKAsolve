@@ -79,14 +79,20 @@ void Solver::buildBCMap() {
 
 // assemble and solve
 void Solver::solve(maka::Timer* timer) {
-#ifdef USE_CUDA
-	cudaland::setDevice(pcu_->Self() % 6); // HARDCODED TO ONE NODE ON DCS-2024
-#endif
-	HYPRE_Initialize();
-	// switch between solver methods here
 	if (timer) timer->start_time(pcu_);
 	MPI_Comm comm;
 	pcu_->DupComm(&comm);
+
+#ifdef USE_CUDA
+	MPI_Comm node_comm;
+	MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &node_comm);
+	int node_rank; // rank within one node
+	MPI_Comm_rank(node_comm, &node_rank);
+	cudaland::setDevice(node_rank % std::max(1, input_.node_gpus));
+	MPI_Comm_free(&node_comm);
+#endif
+	HYPRE_Initialize();
+	// switch between solver methods here
 
 	if (input_.backend_solver == SolverType::CPU) {
 		HYPRE_SetExecutionPolicy(HYPRE_EXEC_HOST);
