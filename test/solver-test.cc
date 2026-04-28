@@ -62,12 +62,15 @@ int main(int argc, char* argv[]) {
 		double sum_above = 0, sum_below = 0;
 		apf::MeshIterator* it = mesh->begin(0);
 		for (apf::MeshEntity* vtx; (vtx = mesh->iterate(it));) {
+			if (!mesh->isOwned(vtx)) continue;
 			double value = apf::getScalar(phi, vtx, 0);
 			auto x = apf::getLinearCentroid(mesh, vtx);
 			if (x.y() > 0.5) sum_above += value;
 			else if (x.y() < 0.5) sum_below += value;
 		}
 		mesh->end(it);
+		sum_above = PCU.Add<double>(sum_above);
+		sum_below = PCU.Add<double>(sum_below);
 		double diff = std::abs(sum_above - sum_below) / mesh->count(0);
 		std::cout << "above/below diff over verts: " << diff << '\n';
 		if (diff > 0.01) { // Be very tolerant.

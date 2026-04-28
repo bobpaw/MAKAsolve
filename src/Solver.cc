@@ -287,6 +287,23 @@ void Solver::solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x, MPI_Com
 	/* Destory solver and preconditioner */
 	HYPRE_ParCSRFlexGMRESDestroy(solver);
 	HYPRE_BoomerAMGDestroy(precond);
+
+	// Write solution to mesh
+	apf::MeshIterator* it = mesh_->begin(0);
+	apf::NewArray<double> x_local(n_owned_);
+	apf::NewArray<int> x_all(n_owned_);
+	for (int i = 0; i < n_owned_; i++) x_all[i] = min_owned_ + i;
+	HYPRE_IJVectorGetValues(x, n_owned_, &x_all[0], &x_local[0]);
+	int x_idx = 0;
+	for (apf::MeshEntity* n; (n = mesh_->iterate(it));) {
+		bool owned = mesh_->isOwned(n);
+		if (owned) {
+			apf::setScalar(phi_, n, 0, x_local[x_idx]);
+			x_idx++;
+		}
+	}
+	apf::synchronize(phi_);
+	mesh_->end(it);
 }
 
 } // namespace maka
