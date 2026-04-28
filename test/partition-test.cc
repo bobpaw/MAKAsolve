@@ -10,7 +10,7 @@
 #include <ma.h>
 #include <parma.h>
 
-#include "test_utils.h"
+#include "test-utils.h"
 
 int main(int argc, char* argv[]) {
 	pcu::Init(&argc, &argv);

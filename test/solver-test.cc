@@ -19,7 +19,7 @@
 #include <ma.h>
 #include <mthQR.h>
 
-#include "test_utils.h"
+#include "test-utils.h"
 
 void print_exception(const std::exception& e, int level = 0);
 
