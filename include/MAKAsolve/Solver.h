@@ -1,6 +1,8 @@
 #ifndef MAKASOLVE_SOLVER_H
 #define MAKASOLVE_SOLVER_H
 
+#include <HYPRE.h>
+#include <HYPRE_parcsr_ls.h>
 #include <MAKAsolve/Input.h>
 #include <apfField.h>
 #include <apfMesh.h>
@@ -8,14 +10,12 @@
 #include <map>
 #include <utility>
 #include <vector>
-#include <HYPRE.h>
-#include <HYPRE_parcsr_ls.h>
 
 namespace maka {
 
 class Solver {
 public:
-	Solver(apf::Field* phi, const Input& input, pcu::PCU *pcu);
+	Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu);
 	~Solver();
 
 	// assemble and solve
@@ -41,7 +41,8 @@ private:
 	// solve in parallel with HYPRE
 	void assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x);
 
-	void solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x, MPI_Comm &comm);
+	void solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x,
+						 MPI_Comm& comm);
 };
 } // namespace maka
 

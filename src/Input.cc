@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <cctype>
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
-#include <memory>
 
 namespace maka {
 

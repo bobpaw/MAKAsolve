@@ -1,9 +1,9 @@
 #include <MAKAsolve/Solver.h>
 // #include <MAKAsolve/SparseSolver.h>
-#include <cmath>
-#include <string>
-#include <limits.h>
 #include <cassert>
+#include <cmath>
+#include <limits.h>
+#include <string>
 
 #include <PCU.h>
 #include <apfDynamicArray.h>
@@ -20,7 +20,8 @@
 namespace maka {
 
 // extract mesh from phi, create node numbering, build BC map
-Solver::Solver(apf::Field* phi, const Input& input, pcu::PCU *pcu) : phi_(phi), input_(input), pcu_(pcu) {
+Solver::Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu)
+		: phi_(phi), input_(input), pcu_(pcu) {
 	mesh_ = apf::getMesh(phi);
 
 	constexpr int order = 1;
@@ -29,7 +30,6 @@ Solver::Solver(apf::Field* phi, const Input& input, pcu::PCU *pcu) : phi_(phi), 
 	// create a global numbering
 	gnbr_ = apf::makeGlobal(apf::numberOwnedNodes(mesh_, "nodes", shape));
 	apf::synchronize(gnbr_);
-
 
 	// find numbering information for each process
 	min_owned_ = INT_MAX;
@@ -85,7 +85,8 @@ void Solver::solve() {
 		HYPRE_IJVector b;
 		HYPRE_IJVector x;
 
-		HYPRE_IJMatrixCreate(comm, min_owned_, max_owned_, min_owned_, max_owned_, &A);
+		HYPRE_IJMatrixCreate(comm, min_owned_, max_owned_, min_owned_, max_owned_,
+												 &A);
 		HYPRE_IJMatrixSetObjectType(A, HYPRE_PARCSR);
 		HYPRE_IJMatrixInitialize(A);
 
@@ -132,13 +133,13 @@ void Solver::assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x) {
 	}
 	mesh_->end(it);
 
-	HYPRE_IJMatrixSetRowSizes(A, &rowSizes[0]); 
+	HYPRE_IJMatrixSetRowSizes(A, &rowSizes[0]);
 
 	it = mesh_->begin(dim);
 	for (apf::MeshEntity* e; (e = mesh_->iterate(it));) {
 		// build ien array
 		apf::Downward e_nodes;
-		int nen = mesh_->getDownward(e, 0, e_nodes); 
+		int nen = mesh_->getDownward(e, 0, e_nodes);
 		apf::NewArray<int> ien(nen);
 		apf::NewArray<bool> owns(nen);
 		for (int i = 0; i < nen; ++i) {
@@ -155,18 +156,18 @@ void Solver::assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x) {
 		apf::NewArray<double> set_values(nen);
 		apf::NewArray<double> bc_values(nen);
 		for (int i = 0; i < nen; i++) {
-			set_ncols[i] = 1.0; // for BCs each row will only have one column
+			set_ncols[i] = 1.0;	 // for BCs each row will only have one column
 			set_values[i] = 1.0; // for BCs the one column will be 1
 		}
 
-		// for adding (non-BC nodes) 
+		// for adding (non-BC nodes)
 		int add_rows_idx = 0; // same as nrows by end of loop
 		int add_values_idx = 0;
 		apf::NewArray<int> add_rows(nen);
 		apf::NewArray<int> add_ncols(nen);
-		apf::NewArray<int> add_cols(nen*nen);
-		apf::NewArray<double> add_values(nen*nen);
-		for (int i = 0; i < nen*nen; i++) add_values[i] = 0.0;
+		apf::NewArray<int> add_cols(nen * nen);
+		apf::NewArray<double> add_values(nen * nen);
+		for (int i = 0; i < nen * nen; i++) add_values[i] = 0.0;
 
 		apf::MeshElement* me = apf::createMeshElement(mesh_, e);
 		apf::Element* el = apf::createElement(phi_, me);
@@ -198,8 +199,9 @@ void Solver::assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x) {
 					add_rows[add_rows_idx] = ien[a];
 					add_ncols[add_rows_idx] = nen;
 					for (int b = 0; b < nen; b++) {
-						double K_a_b_contrib = -(shp_grad[a] * adv) * shp[b] * wdv 
-												+ (shp_grad[a] * (kappa_eye * shp_grad[b])) * wdv;
+						double K_a_b_contrib =
+							-(shp_grad[a] * adv) * shp[b] * wdv
+							+ (shp_grad[a] * (kappa_eye * shp_grad[b])) * wdv;
 						add_cols[add_values_idx] = ien[b];
 						add_values[add_values_idx] += K_a_b_contrib;
 						add_values_idx++;
@@ -212,8 +214,10 @@ void Solver::assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x) {
 		apf::destroyMeshElement(me);
 
 		// indices end up being sizes after the loops
-		HYPRE_IJMatrixSetValues(A, set_rows_idx, &set_ncols[0], &set_rows[0], &set_cols[0], &set_values[0]);
-		HYPRE_IJMatrixAddToValues(A, add_rows_idx, &add_ncols[0], &add_rows[0], &add_cols[0], &add_values[0]);
+		HYPRE_IJMatrixSetValues(A, set_rows_idx, &set_ncols[0], &set_rows[0],
+														&set_cols[0], &set_values[0]);
+		HYPRE_IJMatrixAddToValues(A, add_rows_idx, &add_ncols[0], &add_rows[0],
+															&add_cols[0], &add_values[0]);
 		HYPRE_IJVectorSetValues(b, set_rows_idx, &set_rows[0], &bc_values[0]);
 	}
 	mesh_->end(it);
@@ -232,21 +236,22 @@ void Solver::assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x) {
 	HYPRE_IJVectorAssemble(x);
 }
 
-void Solver::solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x, MPI_Comm &comm) {
+void Solver::solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x,
+									 MPI_Comm& comm) {
 	// convert to inputs solver can use
 	HYPRE_ParCSRMatrix parcsr_A;
 	HYPRE_ParVector par_b;
 	HYPRE_ParVector par_x;
-	HYPRE_IJMatrixGetObject(A, (void**) &parcsr_A);
-	HYPRE_IJVectorGetObject(b, (void **) &par_b);
-	HYPRE_IJVectorGetObject(x, (void **) &par_x);
+	HYPRE_IJMatrixGetObject(A, (void**)&parcsr_A);
+	HYPRE_IJVectorGetObject(b, (void**)&par_b);
+	HYPRE_IJVectorGetObject(x, (void**)&par_x);
 
 	// adapted from HYPRE Ex. 5
 	// https://ftp.mcs.anl.gov/pub/pdetools/nightlylogs/xsdk/xsdk-configuration-tester/packages/hypre-2015.05.07/src/examples/README.html
-	int    num_iterations;
+	int num_iterations;
 	double final_res_norm;
-	int    restart = 30;
-	int    modify = 1;
+	int restart = 30;
+	int modify = 1;
 
 	/* Create solver */
 	HYPRE_Solver solver, precond;
@@ -254,20 +259,21 @@ void Solver::solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x, MPI_Com
 
 	HYPRE_FlexGMRESSetKDim(solver, restart);
 	HYPRE_FlexGMRESSetMaxIter(solver, 1000); /* max iterations */
-	HYPRE_FlexGMRESSetTol(solver, 1e-7); /* conv. tolerance */
+	HYPRE_FlexGMRESSetTol(solver, 1e-7);		 /* conv. tolerance */
 	HYPRE_FlexGMRESSetPrintLevel(solver, 2); /* print solve info */
-	HYPRE_FlexGMRESSetLogging(solver, 1); /* needed to get run info later */
+	HYPRE_FlexGMRESSetLogging(solver, 1);		 /* needed to get run info later */
 
 	HYPRE_BoomerAMGCreate(&precond);
-	HYPRE_BoomerAMGSetPrintLevel(precond, 1); /* print amg solution info */
+	HYPRE_BoomerAMGSetPrintLevel(precond, 1);	 /* print amg solution info */
 	HYPRE_BoomerAMGSetCoarsenType(precond, 8); // switch from 6 to 8
-	HYPRE_BoomerAMGSetRelaxType(precond, 6); /* Sym G.S./Jacobi hybrid */
+	HYPRE_BoomerAMGSetRelaxType(precond, 6);	 /* Sym G.S./Jacobi hybrid */
 	HYPRE_BoomerAMGSetNumSweeps(precond, 1);
-	HYPRE_BoomerAMGSetTol(precond, 0.0); /* conv. tolerance zero */
+	HYPRE_BoomerAMGSetTol(precond, 0.0);	 /* conv. tolerance zero */
 	HYPRE_BoomerAMGSetMaxIter(precond, 1); /* do only one iteration! */
 
-	HYPRE_FlexGMRESSetPrecond(solver, (HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSolve,
-						(HYPRE_PtrToSolverFcn) HYPRE_BoomerAMGSetup, precond);
+	HYPRE_FlexGMRESSetPrecond(solver, (HYPRE_PtrToSolverFcn)HYPRE_BoomerAMGSolve,
+														(HYPRE_PtrToSolverFcn)HYPRE_BoomerAMGSetup,
+														precond);
 
 	/* Now setup and solve! */
 	HYPRE_ParCSRFlexGMRESSetup(solver, parcsr_A, par_b, par_x);
@@ -276,8 +282,7 @@ void Solver::solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x, MPI_Com
 	/* Run info - needed logging turned on */
 	HYPRE_FlexGMRESGetNumIterations(solver, &num_iterations);
 	HYPRE_FlexGMRESGetFinalRelativeResidualNorm(solver, &final_res_norm);
-	if (pcu_->Self() == 0)
-	{
+	if (pcu_->Self() == 0) {
 		printf("\n");
 		printf("Iterations = %d\n", num_iterations);
 		printf("Final Relative Residual Norm = %e\n", final_res_norm);

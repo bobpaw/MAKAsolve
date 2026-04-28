@@ -59,7 +59,8 @@ int main(int argc, char* argv[]) {
 			bool owned = mesh->isOwned(n);
 			if (owned) {
 				if (last_owned_id < 0) last_owned_id = number - 1;
-				//if (PCU.Self() == 1) printf("%d vs last number %d\n", number, last_owned_id);
+				// if (PCU.Self() == 1) printf("%d vs last number %d\n", number,
+				// last_owned_id);
 				assert(number - last_owned_id == 1);
 				last_owned_id = number;
 			} else {
