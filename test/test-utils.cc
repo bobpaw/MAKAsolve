@@ -1,4 +1,4 @@
-#include "test_utils.h"
+#include "test-utils.h"
 
 #include <cassert>
 #include <gmi_mesh.h>
