@@ -1,5 +1,8 @@
 #include <MAKAsolve/Solver.h>
 // #include <MAKAsolve/SparseSolver.h>
+#ifdef USE_CUDA
+#include <MAKAsolve/CUDALand.h>
+#endif
 #include <cassert>
 #include <cmath>
 #include <limits.h>
@@ -76,53 +79,63 @@ void Solver::buildBCMap() {
 
 // assemble and solve
 void Solver::solve(maka::Timer* timer) {
+#ifdef USE_CUDA
+	cudaland::setDevice(pcu_->Self() % 6); // HARDCODED TO ONE NODE ON DCS-2024
+#endif
+	HYPRE_Initialize();
 	// switch between solver methods here
-	if (input_.backend_solver == SolverType::CPU) {
-		if (timer) timer->start_time(pcu_);
-		MPI_Comm comm;
-		pcu_->DupComm(&comm);
+	if (timer) timer->start_time(pcu_);
+	MPI_Comm comm;
+	pcu_->DupComm(&comm);
 
+	if (input_.backend_solver == SolverType::CPU) {
 		HYPRE_SetExecutionPolicy(HYPRE_EXEC_HOST);
 		HYPRE_SetMemoryLocation(HYPRE_MEMORY_HOST);
-
-		HYPRE_IJMatrix A;
-		HYPRE_IJVector b;
-		HYPRE_IJVector x;
-
-		HYPRE_IJMatrixCreate(comm, min_owned_, max_owned_, min_owned_, max_owned_,
-												 &A);
-		HYPRE_IJMatrixSetObjectType(A, HYPRE_PARCSR);
-		HYPRE_IJMatrixInitialize(A);
-
-		HYPRE_IJVectorCreate(comm, min_owned_, max_owned_, &b);
-		HYPRE_IJVectorSetObjectType(b, HYPRE_PARCSR);
-		HYPRE_IJVectorInitialize(b);
-
-		HYPRE_IJVectorCreate(comm, min_owned_, max_owned_, &x);
-		HYPRE_IJVectorSetObjectType(x, HYPRE_PARCSR);
-		HYPRE_IJVectorInitialize(x);
-
-		integrate(A, b, x);
-		if (timer) {
-			timer->stop_time("integrations", pcu_);
-			timer->start_time(pcu_);
-		}
-		HYPRE_IJMatrixAssemble(A);
-		HYPRE_IJVectorAssemble(b);
-		HYPRE_IJVectorAssemble(x);
-		if (timer) {
-			timer->stop_time("assembly", pcu_);
-			timer->start_time(pcu_);
-		}
-		solve(A, b, x, comm);
-
-		HYPRE_IJMatrixDestroy(A);
-		HYPRE_IJVectorDestroy(b);
-		HYPRE_IJVectorDestroy(x);
-		if (timer) timer->stop_time("solve", pcu_);
-
-		MPI_Comm_free(&comm);
+	} else if (input_.backend_solver == SolverType::GPU) {
+		HYPRE_SetExecutionPolicy(HYPRE_EXEC_DEVICE);
+		HYPRE_SetMemoryLocation(HYPRE_MEMORY_DEVICE);
+		HYPRE_DeviceInitialize();
 	}
+
+	HYPRE_IJMatrix A;
+	HYPRE_IJVector b;
+	HYPRE_IJVector x;
+
+	HYPRE_IJMatrixCreate(comm, min_owned_, max_owned_, min_owned_, max_owned_,
+											 &A);
+	HYPRE_IJMatrixSetObjectType(A, HYPRE_PARCSR);
+	HYPRE_IJMatrixInitialize(A);
+
+	HYPRE_IJVectorCreate(comm, min_owned_, max_owned_, &b);
+	HYPRE_IJVectorSetObjectType(b, HYPRE_PARCSR);
+	HYPRE_IJVectorInitialize(b);
+
+	HYPRE_IJVectorCreate(comm, min_owned_, max_owned_, &x);
+	HYPRE_IJVectorSetObjectType(x, HYPRE_PARCSR);
+	HYPRE_IJVectorInitialize(x);
+
+	integrate(A, b, x);
+	if (timer) {
+		timer->stop_time("integrations", pcu_);
+		timer->start_time(pcu_);
+	}
+	HYPRE_IJMatrixAssemble(A);
+	HYPRE_IJVectorAssemble(b);
+	HYPRE_IJVectorAssemble(x);
+	if (timer) {
+		timer->stop_time("assembly", pcu_);
+		timer->start_time(pcu_);
+	}
+	solve(A, b, x, comm);
+
+	HYPRE_IJMatrixDestroy(A);
+	HYPRE_IJVectorDestroy(b);
+	HYPRE_IJVectorDestroy(x);
+	if (timer) timer->stop_time("solve", pcu_);
+
+	MPI_Comm_free(&comm);
+
+	HYPRE_Finalize();
 }
 
 // solve in parallel with HYPRE

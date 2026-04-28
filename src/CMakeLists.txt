@@ -7,10 +7,12 @@ set(SOURCES
 add_library(MAKAsolve ${SOURCES})
 target_link_libraries(MAKAsolve PUBLIC SCOREC::core)
 if(CMAKE_CUDA_COMPILER)
+	add_library(CUDALand CUDALand.cu)
 	target_link_libraries(MAKAsolve PUBLIC 
 		-Wl,--start-group 
 		HYPRE::HYPRE
 		CUDA::cusparse
+		CUDALand
 		-Wl,--end-group
 	)
 else()

@@ -35,7 +35,22 @@ HYPRE can be built with GPU support on AiMOS with the
 [NVIDIA HPC SDK](https://docs.cci.rpi.edu/software/NVHPC/) for CUDA >= 11.2. 
 HYPRE can be built and installed on AiMOS with CMake 
 [(link to instructions)](https://github.com/hypre-space/hypre/blob/master/INSTALL.md#hypre-installation-information-using-cmake) if HYPRE's minimum CMake version 
-is lowered (this does not appear to cause any issues). `HYPRE_ENABLE_CUDA` must be enabled.
+is lowered (this does not appear to cause any issues). The following example configure command should enable solving on the GPU with HYPRE.
+
+```sh
+cmake -B build -S src -DCMAKE_INSTALL_PREFIX=/opt/HYPRE \
+    -DHYPRE_ENABLE_CUDA=ON \
+    -DHYPRE_ENABLE_UMPIRE=OFF \
+    -DHYPRE_ENABLE_GPU_AWARE_MPI=ON \
+    -DCMAKE_CXX_STANDARD=11 \
+    -DCMAKE_CUDA_STANDARD=11
+```
+
+To use GPUs `mpirun` must be provided the following additional flags ([details](https://docs.cci.rpi.edu/Slurm/#gpu-direct)).
+
+```sh
+mpirun -gpu -mca pml_pami_enable_gdrcpy 1 -np ...
+```
 
 ## Authors
 
