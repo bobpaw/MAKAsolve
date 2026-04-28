@@ -12,6 +12,7 @@ if(CMAKE_CUDA_COMPILER)
 endif()
 find_package(MPI REQUIRED)
 find_package(SCOREC 4 REQUIRED)
+find_package(HYPRE REQUIRED)
 
 # Link everything with MPI
 link_libraries(MPI::MPI_CXX)

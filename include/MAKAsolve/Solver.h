@@ -8,26 +8,16 @@
 #include <map>
 #include <utility>
 #include <vector>
+#include <HYPRE.h>
+#include <HYPRE_parcsr_ls.h>
 
 namespace maka {
 
-struct LinearSystem {
-	// number of rows
-	int n;
-	// COO sparse matrix storage
-	std::vector<int> row, col;
-	std::vector<double> val, rhs;
-};
-
 class Solver {
 public:
-	Solver(apf::Field* phi, const Input& input);
+	Solver(apf::Field* phi, const Input& input, pcu::PCU *pcu);
 	~Solver();
 
-	// assemble, output goes into sparse linear system
-	void assemble(LinearSystem& sys);
-	// solve a pre assembled system and write back to phi field
-	void solve(LinearSystem& sys);
 	// assemble and solve
 	void solve();
 
@@ -36,13 +26,22 @@ private:
 	apf::Mesh* mesh_;
 	const Input& input_;
 
-	apf::Numbering* nbr_;
+	pcu::PCU* pcu_;
+	apf::GlobalNumbering* gnbr_;
 	int numNodes_;
+	int min_owned_;
+	int max_owned_;
+	int n_owned_;
 
 	std::map<int, double> dirichletMap_;
 
 	// convert BCs into algebraic constraints
 	void buildBCMap();
+
+	// solve in parallel with HYPRE
+	void assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x);
+
+	void solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x, MPI_Comm &comm);
 };
 } // namespace maka
 

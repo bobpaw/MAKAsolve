@@ -53,10 +53,16 @@ int main(int argc, char* argv[]) {
 		mesh->end(it);
 		it = mesh->begin(0);
 		int num_not_owned = 0;
+		int last_owned_id = -1;
 		for (apf::MeshEntity* n; (n = mesh->iterate(it));) {
 			int number = apf::getNumber(gnbr, n, 0, 0);
 			bool owned = mesh->isOwned(n);
-			if (!owned) {
+			if (owned) {
+				if (last_owned_id < 0) last_owned_id = number - 1;
+				//if (PCU.Self() == 1) printf("%d vs last number %d\n", number, last_owned_id);
+				assert(number - last_owned_id == 1);
+				last_owned_id = number;
+			} else {
 				num_not_owned++;
 				assert(number < min_owned || number > max_owned);
 			}
