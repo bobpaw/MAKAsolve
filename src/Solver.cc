@@ -20,8 +20,10 @@
 namespace maka {
 
 // extract mesh from phi, create node numbering, build BC map
-Solver::Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu)
+Solver::Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu,
+							 maka::Timer* timer)
 		: phi_(phi), input_(input), pcu_(pcu) {
+	timer->start_time(pcu_);
 	mesh_ = apf::getMesh(phi);
 
 	constexpr int order = 1;
@@ -49,6 +51,7 @@ Solver::Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu)
 	mesh_->end(it);
 
 	buildBCMap();
+	timer->stop_time("solver_constructor", pcu_);
 }
 
 Solver::~Solver() {
@@ -72,9 +75,10 @@ void Solver::buildBCMap() {
 }
 
 // assemble and solve
-void Solver::solve() {
+void Solver::solve(maka::Timer* timer) {
 	// switch between solver methods here
 	if (input_.backend_solver == SolverType::CPU) {
+		if (timer) timer->start_time(pcu_);
 		MPI_Comm comm;
 		pcu_->DupComm(&comm);
 
@@ -98,19 +102,31 @@ void Solver::solve() {
 		HYPRE_IJVectorSetObjectType(x, HYPRE_PARCSR);
 		HYPRE_IJVectorInitialize(x);
 
-		assemble(A, b, x);
+		integrate(A, b, x);
+		if (timer) {
+			timer->stop_time("integrations", pcu_);
+			timer->start_time(pcu_);
+		}
+		HYPRE_IJMatrixAssemble(A);
+		HYPRE_IJVectorAssemble(b);
+		HYPRE_IJVectorAssemble(x);
+		if (timer) {
+			timer->stop_time("assembly", pcu_);
+			timer->start_time(pcu_);
+		}
 		solve(A, b, x, comm);
 
 		HYPRE_IJMatrixDestroy(A);
 		HYPRE_IJVectorDestroy(b);
 		HYPRE_IJVectorDestroy(x);
+		if (timer) timer->stop_time("solve", pcu_);
 
 		MPI_Comm_free(&comm);
 	}
 }
 
 // solve in parallel with HYPRE
-void Solver::assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x) {
+void Solver::integrate(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x) {
 	double kappa = input_.kappa;
 	double adv_dir = input_.adv_dir;
 	double adv_mag = input_.adv_mag;
@@ -230,10 +246,6 @@ void Solver::assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x) {
 		zeros[i] = 0.0;
 	}
 	HYPRE_IJVectorSetValues(x, n_owned_, &sol_zeros_idx[0], &zeros[0]);
-
-	HYPRE_IJMatrixAssemble(A);
-	HYPRE_IJVectorAssemble(b);
-	HYPRE_IJVectorAssemble(x);
 }
 
 void Solver::solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x,

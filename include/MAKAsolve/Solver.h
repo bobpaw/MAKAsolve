@@ -4,6 +4,7 @@
 #include <HYPRE.h>
 #include <HYPRE_parcsr_ls.h>
 #include <MAKAsolve/Input.h>
+#include <MAKAsolve/Timer.h>
 #include <apfField.h>
 #include <apfMesh.h>
 #include <apfNumbering.h>
@@ -15,11 +16,12 @@ namespace maka {
 
 class Solver {
 public:
-	Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu);
+	Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu,
+				 maka::Timer* timer = 0);
 	~Solver();
 
 	// assemble and solve
-	void solve();
+	void solve(maka::Timer* timer = 0);
 
 private:
 	apf::Field* phi_;
@@ -39,7 +41,7 @@ private:
 	void buildBCMap();
 
 	// solve in parallel with HYPRE
-	void assemble(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x);
+	void integrate(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x);
 
 	void solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x,
 						 MPI_Comm& comm);

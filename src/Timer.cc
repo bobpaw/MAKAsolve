@@ -24,7 +24,8 @@ Timer::Timer(int precision) {
 	std::cout << std::setprecision(precision);
 }
 
-void Timer::start_time() {
+void Timer::start_time(pcu::PCU* pcu) {
+	if (pcu) pcu->Barrier();
 #ifdef POWER9
 	start_ticks_ = getticks();
 #else
@@ -32,7 +33,8 @@ void Timer::start_time() {
 #endif
 }
 
-void Timer::stop_time(std::string header) {
+void Timer::stop_time(std::string header, pcu::PCU* pcu) {
+	if (pcu) pcu->Barrier();
 	double time = 0;
 #ifdef POWER9
 	ticks stop_ticks_ = getticks();

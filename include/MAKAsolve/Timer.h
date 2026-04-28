@@ -14,9 +14,11 @@ class Timer {
 public:
 	Timer(int precision = 9);
 
-	void start_time();
+	// Do barrier if PCU is provided
+	void start_time(pcu::PCU* pcu = 0);
 
-	void stop_time(std::string header);
+	// Does barrier if PCU is provided
+	void stop_time(std::string header, pcu::PCU* pcu = 0);
 
 	// prints times in a single line
 	void print_times_line();

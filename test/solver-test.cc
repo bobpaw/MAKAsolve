@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 		// Timer use
 		maka::Timer timer;
 		timer.prepend_info("ranks", PCU.Peers());
-		if (PCU.Self() == 0) timer.start_time();
+		timer.start_time(&PCU);
 
 		// Initialize geometry library
 		gmi_register_mesh();
@@ -58,8 +58,9 @@ int main(int argc, char* argv[]) {
 
 		// read input + run solver
 		auto input = maka::readInput(argv[4]);
-		maka::Solver solver(phi, *input, &PCU);
-		solver.solve();
+		timer.stop_time("setup", &PCU);
+		maka::Solver solver(phi, *input, &PCU, &timer);
+		solver.solve(&timer);
 
 		// Optionally plot.
 		if (vtkFile) apf::writeVtkFiles(vtkFile, mesh);
@@ -85,8 +86,7 @@ int main(int argc, char* argv[]) {
 
 		// Example output data (printing in this format will make processing easier)
 		if (PCU.Self() == 0) {
-			timer.stop_time("whole_run");
-			timer.print_header_line();
+			if (PCU.Peers() == 1) timer.print_header_line();
 			timer.print_times_line();
 		}
 	} catch (int r) {
