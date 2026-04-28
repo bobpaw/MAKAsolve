@@ -5,7 +5,7 @@ set(${PROJECT_NAME}_TEST_LAUNCHER
 
 # Add a MAKAsolve test target executable.
 macro(add_maka_test_exe EXE)
-	add_executable(${EXE} ${ARGN})
+	add_executable(${EXE} test-utils.cc ${ARGN})
 	target_link_libraries(${EXE} MAKAsolve)
 endmacro(add_maka_test_exe)
 
@@ -59,3 +59,5 @@ maka_test_single(solver-test solver-test.cc 1
   0
   "${TESTDATA}/solve-data.rc"
 )
+
+add_maka_test_exe(partition-test partition-test.cc)

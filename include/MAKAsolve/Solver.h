@@ -1,7 +1,10 @@
 #ifndef MAKASOLVE_SOLVER_H
 #define MAKASOLVE_SOLVER_H
 
+#include <HYPRE.h>
+#include <HYPRE_parcsr_ls.h>
 #include <MAKAsolve/Input.h>
+#include <MAKAsolve/Timer.h>
 #include <apfField.h>
 #include <apfMesh.h>
 #include <apfNumbering.h>
@@ -11,38 +14,37 @@
 
 namespace maka {
 
-struct LinearSystem {
-	// number of rows
-	int n;
-	// COO sparse matrix storage
-	std::vector<int> row, col;
-	std::vector<double> val, rhs;
-};
-
 class Solver {
 public:
-	Solver(apf::Field* phi, const Input& input);
+	Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu,
+				 maka::Timer* timer = 0);
 	~Solver();
 
-	// assemble, output goes into sparse linear system
-	void assemble(LinearSystem& sys);
-	// solve a pre assembled system and write back to phi field
-	void solve(LinearSystem& sys);
 	// assemble and solve
-	void solve();
+	void solve(maka::Timer* timer = 0);
 
 private:
 	apf::Field* phi_;
 	apf::Mesh* mesh_;
 	const Input& input_;
 
-	apf::Numbering* nbr_;
+	pcu::PCU* pcu_;
+	apf::GlobalNumbering* gnbr_;
 	int numNodes_;
+	int min_owned_;
+	int max_owned_;
+	int n_owned_;
 
 	std::map<int, double> dirichletMap_;
 
 	// convert BCs into algebraic constraints
 	void buildBCMap();
+
+	// solve in parallel with HYPRE
+	void integrate(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x);
+
+	void solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x,
+						 MPI_Comm& comm);
 };
 } // namespace maka
 
