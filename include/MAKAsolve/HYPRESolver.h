@@ -1,0 +1,51 @@
+#ifndef MAKASOLVE_HYPRE_SOLVER_H
+#define MAKASOLVE_HYPRE_SOLVER_H
+
+#include <HYPRE.h>
+#include <HYPRE_parcsr_ls.h>
+#include <MAKAsolve/Input.h>
+#include <MAKAsolve/Timer.h>
+#include <apfField.h>
+#include <apfMesh.h>
+#include <apfNumbering.h>
+#include <map>
+#include <utility>
+#include <vector>
+
+namespace maka {
+
+class HYPRESolver {
+public:
+	HYPRESolver(apf::Field* phi, const Input& input, pcu::PCU* pcu,
+							maka::Timer* timer = 0);
+	~HYPRESolver();
+
+	// assemble and solve
+	void solve(maka::Timer* timer = 0);
+
+private:
+	apf::Field* phi_;
+	apf::Mesh* mesh_;
+	const Input& input_;
+
+	pcu::PCU* pcu_;
+	apf::GlobalNumbering* gnbr_;
+	int numNodes_;
+	int min_owned_;
+	int max_owned_;
+	int n_owned_;
+
+	std::map<int, double> dirichletMap_;
+
+	// convert BCs into algebraic constraints
+	void buildBCMap();
+
+	// solve in parallel with HYPRE
+	void integrate(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x);
+
+	void solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x,
+						 MPI_Comm& comm);
+};
+} // namespace maka
+
+#endif // MAKASOLVE_HYPRE_SOLVER_H

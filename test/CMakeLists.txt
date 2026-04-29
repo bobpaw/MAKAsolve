@@ -60,4 +60,11 @@ maka_test_single(solver-test solver-test.cc 1
   "${TESTDATA}/solve-data.rc"
 )
 
+maka_test_single(hypre-solver-test hypre-solver-test.cc 1
+  "${TESTDATA}/square.dmg"
+  "${TESTDATA}/square.smb"
+  0
+  "${TESTDATA}/solve-data.rc"
+)
+
 add_maka_test_exe(partition-test partition-test.cc)

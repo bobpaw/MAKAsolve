@@ -118,8 +118,8 @@ void Solver::solve(LinearSystem& sys) {
 #ifdef USE_CUDA
 	// gpu path
 	if (input_.backend_solver == SolverType::GPU) {
-		//SparseSolver solver(sys.n, sys.val.size(), sys.row.data(), sys.val.data());
-		//solver.solve(sys.rhs.data(), solution.data());
+		// SparseSolver solver(sys.n, sys.val.size(), sys.row.data(),
+		// sys.val.data()); solver.solve(sys.rhs.data(), solution.data());
 	} else
 #endif
 	{

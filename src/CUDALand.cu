@@ -1,4 +1,4 @@
-#include <MAKAsolve/CUDALand.h>
+#include "CUDALand.h"
 #include <cuda_runtime.h>
 #include <stdio.h>
 
