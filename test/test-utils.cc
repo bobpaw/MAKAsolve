@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <gmi_mesh.h>
+#include <ma.h>
 #include <parma.h>
 
 // Create a Migration plan
@@ -18,7 +19,8 @@ apf::Migration* getParmaPlan(apf::Mesh* m, int parts) {
 // Load a serial mesh and partition it
 apf::Mesh2* loadAndPartitionSerialMesh(char* modelFile, char* meshFile,
 																			 pcu::PCU& PCU, int expectedVerts,
-																			 int expectedCells) {
+																			 int expectedCells,
+																			 int pre_adapt_refinement) {
 	gmi_register_mesh();
 	// Load geometry model
 	gmi_model* geom = gmi_load(modelFile);
@@ -30,6 +32,8 @@ apf::Mesh2* loadAndPartitionSerialMesh(char* modelFile, char* meshFile,
 		mesh = apf::loadMdsMesh(geom, meshFile, selfPCU.get());
 		assert(mesh->count(0) == expectedVerts);
 		assert(mesh->count(2) == expectedCells);
+		if (pre_adapt_refinement > 0)
+			ma::runUniformRefinement(mesh, pre_adapt_refinement);
 		plan = getParmaPlan(mesh, PCU.Peers());
 	}
 	if (mesh != nullptr) mesh->switchPCU(&PCU);

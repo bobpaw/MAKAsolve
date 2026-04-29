@@ -17,17 +17,19 @@ int main(int argc, char* argv[]) {
 	try {
 		pcu::PCU PCU;
 		if (argc < 4 && PCU.Self() == 0) {
-			std::cout << "USAGE: " << argv[0] << " MODEL MESH REFINEMENT [OUT.vtk]\n";
+			std::cout << "USAGE: " << argv[0]
+								<< " MODEL MESH REFINEMENT [PRE-PART-REFINEMENT] [OUT.vtk]\n";
 			throw 1;
 		}
 		char *modelFile = argv[1], *meshFile = argv[2];
 		int refinement = std::stoi(argv[3]);
-		char* vtkFile = argc > 4 ? argv[4] : NULL;
+		int pre_part_refine = argc > 4 ? std::stoi(argv[4]) : 0;
+		char* vtkFile = argc > 5 ? argv[5] : NULL;
 		// Initialize geometry library
 		gmi_register_mesh();
 		// Load mesh
-		apf::Mesh2* mesh =
-			loadAndPartitionSerialMesh(modelFile, meshFile, PCU, 29, 40);
+		apf::Mesh2* mesh = loadAndPartitionSerialMesh(modelFile, meshFile, PCU, 29,
+																									40, pre_part_refine);
 		assert(mesh && "mesh part does not exist on processor");
 
 		if (refinement > 0) ma::runUniformRefinement(mesh, refinement);

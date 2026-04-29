@@ -71,4 +71,6 @@ maka_test_single(hypre-solver-test hypre-solver-test.cc 1
   "${TESTDATA}/solve-data.rc"
 )
 
+add_maka_test_exe(hypre-solver-benchmark hypre-solver-benchmark.cc)
+
 add_maka_test_exe(partition-test partition-test.cc)
