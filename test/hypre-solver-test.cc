@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 		// read input + run solver
 		auto input = maka::readInput(argv[4]);
 		timer.stop_time("setup");
-		maka::HYPRESolver solver(phi, *input, &PCU, &timer);
+		maka::HYPRESolver solver(phi, *input, &timer);
 		solver.solve(&timer);
 
 		// Optionally plot.

@@ -16,8 +16,7 @@ namespace maka {
 
 class HYPRESolver {
 public:
-	HYPRESolver(apf::Field* phi, const Input& input, pcu::PCU* pcu,
-							maka::Timer* timer = 0);
+	HYPRESolver(apf::Field* phi, const Input& input, maka::Timer* timer = 0);
 	~HYPRESolver();
 
 	// assemble and solve
@@ -28,7 +27,6 @@ private:
 	apf::Mesh* mesh_;
 	const Input& input_;
 
-	pcu::PCU* pcu_;
 	apf::GlobalNumbering* gnbr_;
 	int numNodes_;
 	int min_owned_;

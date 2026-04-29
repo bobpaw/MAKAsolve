@@ -22,9 +22,9 @@
 namespace maka {
 
 // extract mesh from phi, create node numbering, build BC map
-HYPRESolver::HYPRESolver(apf::Field* phi, const Input& input, pcu::PCU* pcu,
+HYPRESolver::HYPRESolver(apf::Field* phi, const Input& input,
 												 maka::Timer* timer)
-		: phi_(phi), input_(input), pcu_(pcu) {
+		: phi_(phi), input_(input) {
 	timer->start_time();
 	mesh_ = apf::getMesh(phi);
 
@@ -80,7 +80,7 @@ void HYPRESolver::buildBCMap() {
 void HYPRESolver::solve(maka::Timer* timer) {
 	if (timer) timer->start_time();
 	MPI_Comm comm;
-	pcu_->DupComm(&comm);
+	mesh_->getPCU()->DupComm(&comm);
 
 #ifdef USE_CUDA
 	MPI_Comm node_comm;
@@ -313,7 +313,7 @@ void HYPRESolver::solve(HYPRE_IJMatrix A, HYPRE_IJVector b, HYPRE_IJVector x,
 	/* Run info - needed logging turned on */
 	HYPRE_FlexGMRESGetNumIterations(solver, &num_iterations);
 	HYPRE_FlexGMRESGetFinalRelativeResidualNorm(solver, &final_res_norm);
-	if (pcu_->Self() == 0) {
+	if (mesh_->getPCU()->Self() == 0) {
 		printf("\n");
 		printf("Iterations = %d\n", num_iterations);
 		printf("Final Relative Residual Norm = %e\n", final_res_norm);
