@@ -3,16 +3,19 @@ set(SOURCES
 	Input.cc
 	Timer.cc
 )
+if(CMAKE_CUDA_COMPILER)
+set(SOURCES ${SOURCES} CUDALand.cu)
+endif()
 
 add_library(MAKAsolve ${SOURCES})
+set_property(TARGET MAKAsolve PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+
 target_link_libraries(MAKAsolve PUBLIC SCOREC::core)
 if(CMAKE_CUDA_COMPILER)
-	add_library(CUDALand CUDALand.cu)
 	target_link_libraries(MAKAsolve PUBLIC 
 		-Wl,--start-group 
 		HYPRE::HYPRE
 		CUDA::cusparse
-		CUDALand
 		-Wl,--end-group
 	)
 else()
