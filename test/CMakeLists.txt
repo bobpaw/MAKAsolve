@@ -3,10 +3,14 @@ set(${PROJECT_NAME}_TEST_LAUNCHER
 	"Test launcher, e.g. valgrind"
 )
 
+# Test utilities
+add_library(test_utils test-utils.cc)
+target_link_libraries(test_utils SCOREC::core)
+
 # Add a MAKAsolve test target executable.
 macro(add_maka_test_exe EXE)
 	add_executable(${EXE} test-utils.cc ${ARGN})
-	target_link_libraries(${EXE} MAKAsolve)
+	target_link_libraries(${EXE} MAKAsolve test_utils)
 endmacro(add_maka_test_exe)
 
 # Add a MAKAsolve test case.
