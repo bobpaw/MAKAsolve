@@ -87,7 +87,9 @@ void HYPRESolver::solve(maka::Timer* timer) {
 	MPI_Comm_split_type(comm, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &node_comm);
 	int node_rank; // rank within one node
 	MPI_Comm_rank(node_comm, &node_rank);
-	cudaland::setDevice(node_rank % std::max(1, input_.node_gpus));
+	int num_devs_used =
+		std::max(1, std::min(input_.max_gpus, cudaland::getDeviceCount()));
+	cudaland::setDevice(node_rank % num_devs_used);
 	MPI_Comm_free(&node_comm);
 #endif
 	HYPRE_Initialize();

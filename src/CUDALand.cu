@@ -14,4 +14,15 @@ void setDevice(int dev) {
 	}
 }
 
+int getDeviceCount() {
+	int count = 0;
+	cudaError_t err = cudaGetDeviceCount(&count);
+	if (err != cudaSuccess) {
+		fprintf(stderr, "Failed to get device count: %s\n",
+						cudaGetErrorString(err));
+		return 0;
+	}
+	return count;
+}
+
 } // namespace cudaland

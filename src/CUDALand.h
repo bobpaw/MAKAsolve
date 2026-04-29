@@ -8,6 +8,8 @@ namespace cudaland {
 
 void setDevice(int dev);
 
-}
+int getDeviceCount();
+
+} // namespace cudaland
 
 #endif // CUDALAND_H

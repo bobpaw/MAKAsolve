@@ -12,4 +12,3 @@ dirichlet 1 8 0.0
 
 # solver settings
 solver gpu
-node_gpus 6
