@@ -92,19 +92,28 @@ void Solver::assemble(LinearSystem& sys) {
 				apf::Matrix3x3 jac_inv;
 				apf::getJacobianInv(me, xi, jac_inv);
 				apf::Matrix3x3 jac_inv_T = apf::transpose(jac_inv);
-				
+
 				apf::Matrix3x3 gij;
 				double gij_fnorm_2 = 0;
 				for (int i = 0; i < dim; ++i) {
 					for (int j = 0; j < dim; ++j) {
+						// sum products of columns from jac_inv
 						gij[i][j] = jac_inv_T[i] * jac_inv_T[j];
-						gij_fnorm_2 += gij[i][j] * gij[i][j];
+						if (i == j) gij_fnorm_2 += gij[i][j] * gij[i][j];
 					}
 				}
-				double tau_A = adv * (gij * adv);
-				double tau_B = 9.0 * gij_fnorm_2 * (kappa * kappa);
-				tau = std::pow(tau_A + tau_B, -0.5);
-				printf("%.13f\n", tau);
+				static bool once = false;
+				double tau_adv = adv * (gij * adv);
+				double tau_diff = 9.0 * gij_fnorm_2 * (kappa * kappa);
+				tau = 1./std::sqrt(tau_adv + tau_diff);
+				if (!once) {
+					once = true;
+					printf("j00: %.13f j01: %.13f\nj10: %.13f j11: %.13f\n", jac_inv[0][0],
+							jac_inv[0][1], jac_inv[1][0], jac_inv[1][1]);
+					printf("g00: %.13f g01: %.13f\ng10: %.13f g11: %.13f\n", gij[0][0],
+							gij[0][1], gij[1][0], gij[1][1]);
+					printf("tau: %.13f\n", tau);
+				}
 			}
 
 			for (int a = 0; a < nen; ++a) {
@@ -113,15 +122,12 @@ void Solver::assemble(LinearSystem& sys) {
 					Kmap[{ien[a], ien[a]}] = 1.0;
 				} else {
 					for (int b = 0; b < nen; ++b) {
-						double stab_term = 0;
-						if (stab_method != StabilizerMethod::None) {
-							stab_term = -1 * (adv * shp_grad[a]) * -tau * (shp_grad[b] * adv) * wdv;
-						}
-
 						Kmap[{ien[a], ien[b]}] +=
 							-(shp_grad[a] * adv) * shp[b] * wdv
-							+ (shp_grad[a] * (kappa_eye * shp_grad[b])) * wdv
-							+ stab_term;
+							+ (shp_grad[a] * (kappa_eye * shp_grad[b])) * wdv;
+						if (stab_method != StabilizerMethod::None)
+							Kmap[{ien[a], ien[b]}] +=
+								(adv * shp_grad[a]) * tau * (shp_grad[b] * adv) * wdv;
 					}
 				}
 			}
