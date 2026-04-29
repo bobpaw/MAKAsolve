@@ -26,7 +26,7 @@ namespace maka {
 Solver::Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu,
 							 maka::Timer* timer)
 		: phi_(phi), input_(input), pcu_(pcu) {
-	timer->start_time(pcu_);
+	timer->start_time();
 	mesh_ = apf::getMesh(phi);
 
 	constexpr int order = 1;
@@ -54,7 +54,7 @@ Solver::Solver(apf::Field* phi, const Input& input, pcu::PCU* pcu,
 	mesh_->end(it);
 
 	buildBCMap();
-	timer->stop_time("solver_constructor", pcu_);
+	timer->stop_time("solver_constructor");
 }
 
 Solver::~Solver() {
@@ -79,7 +79,7 @@ void Solver::buildBCMap() {
 
 // assemble and solve
 void Solver::solve(maka::Timer* timer) {
-	if (timer) timer->start_time(pcu_);
+	if (timer) timer->start_time();
 	MPI_Comm comm;
 	pcu_->DupComm(&comm);
 
@@ -122,22 +122,22 @@ void Solver::solve(maka::Timer* timer) {
 
 	integrate(A, b, x);
 	if (timer) {
-		timer->stop_time("integrations", pcu_);
-		timer->start_time(pcu_);
+		timer->stop_time("integrations");
+		timer->start_time();
 	}
 	HYPRE_IJMatrixAssemble(A);
 	HYPRE_IJVectorAssemble(b);
 	HYPRE_IJVectorAssemble(x);
 	if (timer) {
-		timer->stop_time("assembly", pcu_);
-		timer->start_time(pcu_);
+		timer->stop_time("assembly");
+		timer->start_time();
 	}
 	solve(A, b, x, comm);
 
 	HYPRE_IJMatrixDestroy(A);
 	HYPRE_IJVectorDestroy(b);
 	HYPRE_IJVectorDestroy(x);
-	if (timer) timer->stop_time("solve", pcu_);
+	if (timer) timer->stop_time("solve");
 
 	MPI_Comm_free(&comm);
 

@@ -2,6 +2,7 @@
 #define MAKASOLVE_TIMER_H
 
 #include <PCU.h>
+#include <chrono>
 #include <list>
 #include <sstream>
 #include <string>
@@ -12,15 +13,13 @@ namespace maka {
 
 class Timer {
 public:
-	Timer(int precision = 9);
+	Timer(pcu::PCU* pcu, int precision = 9);
 
-	// Do barrier if PCU is provided
-	void start_time(pcu::PCU* pcu = 0);
+	void start_time();
 
-	// Does barrier if PCU is provided
-	void stop_time(std::string header, pcu::PCU* pcu = 0);
+	void stop_time(std::string header);
 
-	// prints times in a single line
+	// prints times + prefix data in a single line
 	void print_times_line();
 
 	// prints headers
@@ -36,14 +35,16 @@ public:
 	}
 
 private:
+	pcu::PCU* pcu_;
+
 	std::list<std::string> headers_;
-	std::list<double> time_s_;
+	std::list<double> time_ms_;
 	std::string delim_ = " ";
 
 	std::string header_prefix_;
 	std::string prefix_;
 
-	ticks start_ticks_;
+	std::chrono::steady_clock::time_point last_time_;
 };
 
 } // namespace maka

@@ -39,9 +39,9 @@ int main(int argc, char* argv[]) {
 		char* vtkFile = argc > 5 ? argv[5] : NULL;
 
 		// Timer use
-		maka::Timer timer;
+		maka::Timer timer(&PCU);
 		timer.prepend_info("ranks", PCU.Peers());
-		timer.start_time(&PCU);
+		timer.start_time();
 
 		// Initialize geometry library
 		gmi_register_mesh();
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 
 		// read input + run solver
 		auto input = maka::readInput(argv[4]);
-		timer.stop_time("setup", &PCU);
+		timer.stop_time("setup");
 		maka::Solver solver(phi, *input, &PCU, &timer);
 		solver.solve(&timer);
 
