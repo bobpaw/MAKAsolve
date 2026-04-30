@@ -9,9 +9,11 @@ check_language(CUDA)
 if(CMAKE_CUDA_COMPILER)
 	enable_language(CUDA)
 	find_package(CUDAToolkit REQUIRED)
+  add_compile_definitions(USE_CUDA) 
 endif()
 find_package(MPI REQUIRED)
 find_package(SCOREC 4 REQUIRED)
+find_package(HYPRE REQUIRED)
 
 # Link everything with MPI
 link_libraries(MPI::MPI_CXX)

@@ -3,10 +3,14 @@ set(${PROJECT_NAME}_TEST_LAUNCHER
 	"Test launcher, e.g. valgrind"
 )
 
+# Test utilities
+add_library(MAKAtesting  test-utils.cc)
+target_link_libraries(MAKAtesting  SCOREC::core)
+
 # Add a MAKAsolve test target executable.
 macro(add_maka_test_exe EXE)
-	add_executable(${EXE} ${ARGN})
-	target_link_libraries(${EXE} MAKAsolve)
+	add_executable(${EXE} test-utils.cc ${ARGN})
+	target_link_libraries(${EXE} MAKAsolve MAKAtesting)
 endmacro(add_maka_test_exe)
 
 # Add a MAKAsolve test case.
@@ -59,3 +63,14 @@ maka_test_single(solver-test solver-test.cc 1
   0
   "${TESTDATA}/solve-data.rc"
 )
+
+maka_test_single(hypre-solver-test hypre-solver-test.cc 1
+  "${TESTDATA}/square.dmg"
+  "${TESTDATA}/square.smb"
+  0
+  "${TESTDATA}/solve-data.rc"
+)
+
+add_maka_test_exe(hypre-solver-benchmark hypre-solver-benchmark.cc)
+
+add_maka_test_exe(partition-test partition-test.cc)

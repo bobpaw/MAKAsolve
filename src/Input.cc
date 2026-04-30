@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cctype>
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 
@@ -44,6 +45,8 @@ InputPtr readInput(const std::string& filename) {
 			DirichletBC bc;
 			iss >> bc.model_dim >> bc.model_tag >> bc.value;
 			input->dirichletBCs.push_back(bc);
+		} else if (key == "max_gpus") {
+			iss >> input->max_gpus;
 		}
 	}
 
